@@ -1,0 +1,16 @@
+{
+    "name": "LYGJ.Common",
+    "rootNamespace": "LYGJ.Common",
+    "references": [
+        "GUID:647049762fb21344db4560f4043f7596"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,0 +1,18 @@
+{
+    "name": "LYGJ.Common.Editor",
+    "rootNamespace": "LYGJ.Common",
+    "references": [
+        "GUID:2b9c1d54c8b5d3941a808817cf5390f0"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
