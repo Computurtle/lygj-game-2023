@@ -1,9 +1,7 @@
 {
     "name": "LYGJ.Common",
     "rootNamespace": "LYGJ.Common",
-    "references": [
-        "GUID:647049762fb21344db4560f4043f7596"
-    ],
+    "references": [],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
