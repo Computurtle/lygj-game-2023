@@ -4,7 +4,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace LYGJ.VFX.Editor {
+namespace LYGJ.VFX {
     [CustomEditor(typeof(ViewScaler))]
     public sealed class ViewScalerEditor : UnityEditor.Editor {
 

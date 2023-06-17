@@ -2,7 +2,8 @@
     "name": "LYGJ.Common.Editor",
     "rootNamespace": "LYGJ.Common",
     "references": [
-        "GUID:2b9c1d54c8b5d3941a808817cf5390f0"
+        "GUID:2b9c1d54c8b5d3941a808817cf5390f0",
+        "GUID:90dcd41b2020c2c429fb2d91a618c51c"
     ],
     "includePlatforms": [
         "Editor"
