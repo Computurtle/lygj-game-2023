@@ -12,11 +12,11 @@ using Object = UnityEngine.Object;
 
 namespace LYGJ.EntitySystem.PlayerManagement {
     public sealed class PlayerInteractor : MonoBehaviour {
-        [SerializeField, Tooltip("The layer for raycasting.")]                              LayerMask               _Layer              = default;
-        [SerializeField, Tooltip("The thickness(es) of the raycast(s).")]                   float[]                 _Thicknesses        = { 0.01f, 0.03f, 0.1f, 0.2f };
-        [SerializeField, Tooltip("The maximum distance of the raycast(s).")]                float                   _MaxDistance        = 4f;
-        [SerializeField, Tooltip("The interaction with triggers.")]                         QueryTriggerInteraction _TriggerInteraction = QueryTriggerInteraction.UseGlobal;
-        [SerializeField, Required, SceneObjectsOnly, Tooltip("The origin for raycast(s).")] Transform               _Origin             = null!;
+        [SerializeField, Tooltip("The layer for raycasting.")]                                  LayerMask               _Layer              = default;
+        [SerializeField, Tooltip("The thickness(es) of the raycast(s).")]                       float[]                 _Thicknesses        = { 0.01f, 0.03f, 0.1f, 0.2f };
+        [SerializeField, Tooltip("The maximum distance of the raycast(s).")]                    float                   _MaxDistance        = 4f;
+        [SerializeField, Tooltip("The interaction with triggers.")]                             QueryTriggerInteraction _TriggerInteraction = QueryTriggerInteraction.UseGlobal;
+        [SerializeField, Required, ChildGameObjectsOnly, Tooltip("The origin for raycast(s).")] Transform               _Origin             = null!;
 
         [Space]
         [SerializeField, Tooltip("The minimum time that must elapse, in seconds, between interactions.")] float _Cooldown = 0.25f;

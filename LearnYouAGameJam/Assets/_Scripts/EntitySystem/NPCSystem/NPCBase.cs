@@ -125,12 +125,12 @@ namespace LYGJ.EntitySystem.NPCSystem {
 
         protected virtual void Start() {
             if (EmotionChanged is null) {
-                Debug.LogWarning("No event handler for EmotionChanged.", this);
+                Debug.LogWarning($"No event handler for EmotionChanged. {Key} will not be able to visually display emotions.", this);
             }
             Emotion = default;
 
             if (MotionChanged is null) {
-                Debug.LogWarning("No event handler for MotionChanged.", this);
+                Debug.LogWarning($"No event handler for MotionChanged. {Key} will not be able to visually display movements.", this);
             }
             PushMotion(Motion.Idle, true);
         }

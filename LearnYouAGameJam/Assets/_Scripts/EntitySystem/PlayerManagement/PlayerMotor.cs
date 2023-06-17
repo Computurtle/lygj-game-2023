@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Cinemachine;
 using LYGJ.Common;
 using LYGJ.Common.Attributes;
@@ -234,27 +234,30 @@ namespace LYGJ.EntitySystem.PlayerManagement {
 
         #region Properties / Animations
 
-        [SerializeField, FoldoutGroup("Animations"), Tooltip("The animator component."), Required, ChildGameObjectsOnly] Animator _Anim = null!;
-        [SerializeField, FoldoutGroup("Animations"), Tooltip("The 'animation' parameter name."), AnimParam] string _AnimParam = "animation";
+        [SerializeField, FoldoutGroup("Animations"), Tooltip("The animator component."), ChildGameObjectsOnly] Animator? _Anim = null;
+        [SerializeField, FoldoutGroup("Animations"), Tooltip("The 'animation' parameter name."), AnimParam, ShowIf(nameof(HasAnim))] string _AnimParam = "animation";
+
+        [MemberNotNullWhen(true, nameof(_Anim))]
+        bool HasAnim => _Anim != null;
 
         int _AnimParamHash;
 
         [Space]
-        [SerializeField, FoldoutGroup("Animations"), Tooltip("The ID of the 'idle' animation.")] int _IdleAnimID = 34;
-        [SerializeField, FoldoutGroup("Animations"), Tooltip("The ID of the 'walk' animation.")]            int _WalkAnimID         = 21;
-        [SerializeField, FoldoutGroup("Animations"), Tooltip("The ID of the 'walk left' animation.")]       int _WalkLeftAnimID     = 22;
-        [SerializeField, FoldoutGroup("Animations"), Tooltip("The ID of the 'walk right' animation.")]      int _WalkRightAnimID    = 23;
-        [SerializeField, FoldoutGroup("Animations"), Tooltip("The ID of the 'run' animation.")]             int _RunAnimID          = 18;
-        [SerializeField, FoldoutGroup("Animations"), Tooltip("The ID of the 'run left' animation.")]        int _RunLeftAnimID      = 19;
-        [SerializeField, FoldoutGroup("Animations"), Tooltip("The ID of the 'run right' animation.")]       int _RunRightAnimID     = 20;
-        [SerializeField, FoldoutGroup("Animations"), Tooltip("The ID of the 'jump' animation.")]            int _JumpAnimID         = 50;
-        [SerializeField, FoldoutGroup("Animations"), Tooltip("The ID of the 'idle (crouched)' animation.")] int _IdleCrouchedAnimID = 44;
-        [SerializeField, FoldoutGroup("Animations"), Tooltip("The ID of the 'walk (crouched)' animation.")] int _WalkCrouchedAnimID = 48;
-        [SerializeField, FoldoutGroup("Animations"), Tooltip("The ID of the 'run (crouched)' animation.")]  int _RunCrouchedAnimID  = 47;
+        [SerializeField, FoldoutGroup("Animations"), ShowIf(nameof(HasAnim)), Tooltip("The ID of the 'idle' animation.")] int _IdleAnimID = 34;
+        [SerializeField, FoldoutGroup("Animations"), ShowIf(nameof(HasAnim)), Tooltip("The ID of the 'walk' animation.")]            int _WalkAnimID         = 21;
+        [SerializeField, FoldoutGroup("Animations"), ShowIf(nameof(HasAnim)), Tooltip("The ID of the 'walk left' animation.")]       int _WalkLeftAnimID     = 22;
+        [SerializeField, FoldoutGroup("Animations"), ShowIf(nameof(HasAnim)), Tooltip("The ID of the 'walk right' animation.")]      int _WalkRightAnimID    = 23;
+        [SerializeField, FoldoutGroup("Animations"), ShowIf(nameof(HasAnim)), Tooltip("The ID of the 'run' animation.")]             int _RunAnimID          = 18;
+        [SerializeField, FoldoutGroup("Animations"), ShowIf(nameof(HasAnim)), Tooltip("The ID of the 'run left' animation.")]        int _RunLeftAnimID      = 19;
+        [SerializeField, FoldoutGroup("Animations"), ShowIf(nameof(HasAnim)), Tooltip("The ID of the 'run right' animation.")]       int _RunRightAnimID     = 20;
+        [SerializeField, FoldoutGroup("Animations"), ShowIf(nameof(HasAnim)), Tooltip("The ID of the 'jump' animation.")]            int _JumpAnimID         = 50;
+        [SerializeField, FoldoutGroup("Animations"), ShowIf(nameof(HasAnim)), Tooltip("The ID of the 'idle (crouched)' animation.")] int _IdleCrouchedAnimID = 44;
+        [SerializeField, FoldoutGroup("Animations"), ShowIf(nameof(HasAnim)), Tooltip("The ID of the 'walk (crouched)' animation.")] int _WalkCrouchedAnimID = 48;
+        [SerializeField, FoldoutGroup("Animations"), ShowIf(nameof(HasAnim)), Tooltip("The ID of the 'run (crouched)' animation.")]  int _RunCrouchedAnimID  = 47;
 
         [Space]
-        [SerializeField, FoldoutGroup("Animations"), Tooltip("The time, in seconds, to allow the 'jump' animation to play before transitioning out.")] float _JumpGracePeriod = 0.5f;
-        [SerializeField, FoldoutGroup("Animations"), Tooltip("The minimum offset from origin for horizontal movement to be considered 'walking' in a given direction."), MinValue(0f)] float _SidewalkThreshold = 0.1f;
+        [SerializeField, FoldoutGroup("Animations"), ShowIf(nameof(HasAnim)), Tooltip("The time, in seconds, to allow the 'jump' animation to play before transitioning out.")] float _JumpGracePeriod = 0.5f;
+        [SerializeField, FoldoutGroup("Animations"), ShowIf(nameof(HasAnim)), Tooltip("The minimum offset from origin for horizontal movement to be considered 'walking' in a given direction."), MinValue(0f)] float _SidewalkThreshold = 0.1f;
 
         #endregion
 
@@ -558,8 +561,14 @@ namespace LYGJ.EntitySystem.PlayerManagement {
         [ShowInInspector, ReadOnly, HideInEditorMode, FoldoutGroup("Debug")] MovementState _State = MovementState.None;
 
         int AnimState {
-            get => _Anim.GetInteger(_AnimParamHash);
-            set => _Anim.SetInteger(_AnimParamHash, value);
+            get => _Anim != null ? _Anim.GetInteger(_AnimParamHash) : throw new NullReferenceException("Animator is null.");
+            set {
+                if (_Anim != null) {
+                    _Anim.SetInteger(_AnimParamHash, value);
+                } else {
+                    throw new NullReferenceException("Animator is null.");
+                }
+            }
         }
 
         void Update_Anim() {
@@ -596,6 +605,7 @@ namespace LYGJ.EntitySystem.PlayerManagement {
             }
 
             // Update animations.
+            if (!HasAnim) { return; }
             if ((_State & MovementState.Jumping) != 0) {
                 AnimState = _JumpAnimID;
             } else if ((_State & MovementState.Crouching) != 0) {
