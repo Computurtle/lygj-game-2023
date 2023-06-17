@@ -20,25 +20,29 @@ namespace LYGJ.SaveManagement {
             _SavePrefix    = "save-",
             _Ext           = ".json",
             _SaveFormat    = _SavePrefix + "{0}" + _Ext,
-            _AppSavePrefix = "app-",
+            _AppSavePrefix = "app",
             _AppSaveFormat = _AppSavePrefix + _Ext;
 
-        static readonly DirectoryInfo _SaveDirectory = new(Path.Combine(Application.persistentDataPath, "Saves"));
+        /// <summary> The directory containing all saves. </summary>
+        public static readonly DirectoryInfo Directory = new(Path.Combine(Application.persistentDataPath, "Saves"));
 
-        static ResettableLazy<SaveDataProxy> CreateSaveProxy( string FileName ) =>
+        /// <summary> The file containing the application save. </summary>
+        public static readonly FileInfo AppFile = Directory.CreateSubfile(_AppSaveFormat);
+
+        static ResettableLazy<SaveDataProxy> CreateSaveProxy( int    Index )    => CreateSaveProxy(string.Format(_SaveFormat, Index));
+        static ResettableLazy<SaveDataProxy> CreateSaveProxy( string FileName ) => CreateSaveProxy(Directory.CreateSubfile(FileName));
+        static ResettableLazy<SaveDataProxy> CreateSaveProxy( FileInfo File ) =>
             new(
                 () => {
-                    FileInfo File = _SaveDirectory.CreateSubfile(FileName);
                     SaveData Data = SaveData.Create(File, ReadImmediate: true, CreateIfNotExists: true);
 
                     return new(Data);
                 }
             );
-        static ResettableLazy<SaveDataProxy> CreateSaveProxy( int Index ) => CreateSaveProxy(string.Format(_SaveFormat, Index));
 
         static readonly ResettableLazy<SaveDataProxy>[] _Saves = Enumerable.Range(_FirstSave, Max).Select(CreateSaveProxy).ToArray(Max);
 
-        static readonly ResettableLazy<SaveDataProxy> _App = CreateSaveProxy(_AppSaveFormat);
+        static readonly ResettableLazy<SaveDataProxy> _App = CreateSaveProxy(AppFile);
 
         [ExecuteOnReload]
         static void Cleanup() {
@@ -86,6 +90,20 @@ namespace LYGJ.SaveManagement {
             Debug.Assert(Index is >= _FirstSave and <= Max, "Save index out of range.");
             return GetSave(Index).Value;
         }
+
+        /// <summary> Attempts to get the first unused save index. </summary>
+        /// <param name="Index"> The index of the first unused save. </param>
+        /// <returns> <see langword="true"/> if an unused save index was found; otherwise, <see langword="false"/>. </returns>
+        public static bool TryGetNewSaveIndex( out int Index ) {
+            for (int I = _FirstSave; I <= Max; I++) {
+                if (!GetSave(I).IsValueCreated) {
+                    Index = I;
+                    return true;
+                }
+            }
+            Index = -1;
+            return false;
+        }
     }
 
     public sealed class SaveDataProxy {
@@ -106,10 +124,10 @@ namespace LYGJ.SaveManagement {
         public T GetOrDefault<T>( [LocalizationRequired(false)] string Key, Func<T> Fallback ) where T : notnull => _Data.GetOrDefault(Key, Fallback);
 
         /// <inheritdoc cref="SaveData.GetOrCreate{T}(string,T)"/>
-        public T GetOrCreate<T>( [LocalizationRequired(false)] string Key, T Fallback ) where T : notnull => _Data.GetOrCreate(Key, Fallback);
+        public T GetOrCreate<T>( [LocalizationRequired(false)] string Key, T Creator ) where T : notnull => _Data.GetOrCreate(Key, Creator);
 
         /// <inheritdoc cref="SaveData.GetOrCreate{T}(string,T)"/>
-        public T GetOrCreate<T>( [LocalizationRequired(false)] string Key, Func<T> Fallback ) where T : notnull => _Data.GetOrCreate(Key, Fallback);
+        public T GetOrCreate<T>( [LocalizationRequired(false)] string Key, Func<T> Creator ) where T : notnull => _Data.GetOrCreate(Key, Creator);
 
         /// <inheritdoc cref="SaveData.Set{T}(string,T)"/>
         public void Set<T>( [LocalizationRequired(false)] string Key, T Value ) where T : notnull => _Data.Set(Key, Value);

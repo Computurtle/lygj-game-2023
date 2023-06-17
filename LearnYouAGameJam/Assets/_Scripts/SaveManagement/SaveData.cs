@@ -26,13 +26,16 @@ namespace LYGJ.SaveManagement {
             }
         }
 
-        static readonly JsonSerializerSettings _SerializerSettings = new() {
+        /// <summary> The serialiser configuration. </summary>
+        public static readonly JsonSerializerSettings SerialiserSettings = new() {
             Formatting = Formatting.Indented,
             Converters = {
                 new StringEnumConverter()
             }
         };
-        static readonly JsonSerializer _Serializer = JsonSerializer.Create(_SerializerSettings);
+
+        /// <summary> The serialiser. </summary>
+        public static readonly JsonSerializer Serialiser = JsonSerializer.Create(SerialiserSettings);
 
         /// <summary> Creates a new <see cref="SaveData"/> instance. </summary>
         /// <param name="File"> The file to use. </param>
@@ -120,7 +123,7 @@ namespace LYGJ.SaveManagement {
             using StreamWriter Writer = File.CreateText(_File.FullName);
             using JsonWriter   Json   = new JsonTextWriter(Writer);
 
-            _Serializer.Serialize(Json, _Data);
+            Serialiser.Serialize(Json, _Data);
         }
 
         /// <summary> Asynchronously writes the save data to the local file. </summary>
@@ -130,7 +133,7 @@ namespace LYGJ.SaveManagement {
             await using StreamWriter Writer = File.CreateText(_File.FullName);
             using JsonWriter         Json   = new JsonTextWriter(Writer);
 
-            _Serializer.Serialize(Json, _Data);
+            Serialiser.Serialize(Json, _Data);
         }
 
         /// <summary> Attempts to get the variable with the specified name. </summary>
@@ -146,7 +149,7 @@ namespace LYGJ.SaveManagement {
         /// <typeparam name="T"> The type of the variable to get. </typeparam>
         public bool TryGet<T>( [LocalizationRequired(false)] string Name, [NotNullWhen(true)] out T? Value ) where T : notnull {
             if (TryGet(Name, out JToken? Token)) {
-                T? TypedValue = Token.ToObject<T>(_Serializer);
+                T? TypedValue = Token.ToObject<T>(Serialiser);
                 if (TypedValue is not null) {
                     Value = TypedValue;
                     return true;
@@ -177,7 +180,7 @@ namespace LYGJ.SaveManagement {
         /// <exception cref="InvalidCastException"> Thrown if the variable could not be converted to the specified type. </exception>
         public T Get<T>( [LocalizationRequired(false)] string Name ) where T : notnull {
             JToken Value      = Get(Name.ToLowerInvariant());
-            T?     TypedValue = Value.ToObject<T>(_Serializer);
+            T?     TypedValue = Value.ToObject<T>(Serialiser);
             return TypedValue is not null ? TypedValue : throw new InvalidCastException($"Failed to convert {Value} to {typeof(T).GetNiceName()}. Actual type: {Value.Type}");
         }
 
@@ -234,7 +237,7 @@ namespace LYGJ.SaveManagement {
             }
 
             T CreatedValue = Creator();
-            _Data[Name] = JToken.FromObject(CreatedValue, _Serializer);
+            _Data[Name] = JToken.FromObject(CreatedValue, Serialiser);
             return CreatedValue;
         }
 
@@ -248,7 +251,7 @@ namespace LYGJ.SaveManagement {
 
         /// <inheritdoc cref="Set(string,JToken)"/>
         /// <typeparam name="T"> The type of the variable to set. </typeparam>
-        public void Set<T>( [LocalizationRequired(false)] string Name, T Value ) where T : notnull => _Data[Name.ToLowerInvariant()] = JToken.FromObject(Value, _Serializer);
+        public void Set<T>( [LocalizationRequired(false)] string Name, T Value ) where T : notnull => _Data[Name.ToLowerInvariant()] = JToken.FromObject(Value, Serialiser);
         
         /// <summary> Removes the variable with the specified name. </summary>
         /// <param name="Name"> The name of the variable to remove. </param>
@@ -265,6 +268,11 @@ namespace LYGJ.SaveManagement {
         /// <summary> Gets the name of a variable with the specified segments. </summary>
         /// <param name="Segments"> The segments of the variable name. </param>
         /// <returns> The name of the variable. </returns>
+        [Pure, MustUseReturnValue]
+        [return: LocalizationRequired(false)]
+        public static string GetName( [LocalizationRequired(false)] IEnumerable<string> Segments ) => string.Join('.', Segments).ToLowerInvariant();
+
+        /// <inheritdoc cref="GetName(IEnumerable{string})"/>
         [Pure, MustUseReturnValue]
         [return: LocalizationRequired(false)]
         public static string GetName( [LocalizationRequired(false)] params string[] Segments ) => string.Join('.', Segments).ToLowerInvariant();

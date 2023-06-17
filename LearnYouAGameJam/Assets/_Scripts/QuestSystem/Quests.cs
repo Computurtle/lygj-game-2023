@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using JetBrains.Annotations;
 using LYGJ.SaveManagement;
 using UnityEngine;
@@ -43,27 +44,31 @@ namespace LYGJ.QuestSystem {
             Quest.StartFirstStageInternal();
         }
 
+        [Pure, MustUseReturnValue]
+        [return: LocalizationRequired(false)]
+        static string GetQuestSaveID( [LocalizationRequired(false)] params string[] Segments ) => SaveData.GetName(Segments.Prepend("q"));
+
         /// <summary> Gets the completion status of the quest with the specified ID. </summary>
         /// <param name="ID"> The ID of the quest to get the completion status of. </param>
         /// <returns> The completion status of the quest with the specified ID. </returns>
-        public static Completion GetCompletion( [LocalizationRequired(false)] string ID ) => Saves.Current.GetOrCreate($"q-{ID.ToLowerInvariant()}", Completion.NotStarted);
+        public static Completion GetCompletion( [LocalizationRequired(false)] string ID ) => Saves.Current.GetOrCreate(GetQuestSaveID(ID), Completion.NotStarted);
 
         /// <summary> Sets the completion status of the quest with the specified ID. </summary>
         /// <param name="ID"> The ID of the quest to set the completion status of. </param>
         /// <param name="Completion"> The completion status to set. </param>
-        public static void SetCompletion( [LocalizationRequired(false)] string ID, Completion Completion ) => Saves.Current.Set($"q-{ID.ToLowerInvariant()}", Completion);
+        public static void SetCompletion( [LocalizationRequired(false)] string ID, Completion Completion ) => Saves.Current.Set(GetQuestSaveID(ID), Completion);
 
         /// <summary> Gets the completion status of the quest stage with the specified ID. </summary>
         /// <param name="QuestID"> The ID of the quest to get the completion status of. </param>
         /// <param name="StageID"> The ID of the quest stage to get the completion status of. </param>
-        public static Completion GetCompletion( [LocalizationRequired(false)] string QuestID, [LocalizationRequired(false)] string StageID ) => Saves.Current.GetOrCreate($"q-{QuestStates.GetUniqueID(QuestID, StageID)}", Completion.NotStarted);
+        public static Completion GetCompletion( [LocalizationRequired(false)] string QuestID, [LocalizationRequired(false)] string StageID ) => Saves.Current.GetOrCreate(GetQuestSaveID(QuestID, StageID), Completion.NotStarted);
         /// <returns> The completion status of the quest stage with the specified ID. </returns>
 
         /// <summary> Sets the completion status of the quest stage with the specified ID. </summary>
         /// <param name="QuestID"> The ID of the quest to set the completion status of. </param>
         /// <param name="StageID"> The ID of the quest stage to set the completion status of. </param>
         /// <param name="Completion"> The completion status to set. </param>
-        public static void SetCompletion( [LocalizationRequired(false)] string QuestID, [LocalizationRequired(false)] string StageID, Completion Completion ) => Saves.Current.Set($"q-{QuestStates.GetUniqueID(QuestID, StageID)}", Completion);
+        public static void SetCompletion( [LocalizationRequired(false)] string QuestID, [LocalizationRequired(false)] string StageID, Completion Completion ) => Saves.Current.Set(GetQuestSaveID(QuestID, StageID), Completion);
 
         /// <summary> (Re-)starts the quest stage with the specified ID. </summary>
         /// <param name="QuestID"> The ID of the quest to (re-)start. </param>
