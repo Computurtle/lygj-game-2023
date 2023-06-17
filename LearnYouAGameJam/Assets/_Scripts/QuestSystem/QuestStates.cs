@@ -7,6 +7,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using JetBrains.Annotations;
 using LYGJ.Common;
+using LYGJ.SaveManagement;
 using LYGJ.SceneManagement;
 using Sirenix.OdinInspector;
 using Sirenix.Utilities;
@@ -296,7 +297,9 @@ namespace LYGJ.QuestSystem {
         /// <param name="QuestID"> The ID of the quest. </param>
         /// <param name="StageID"> The ID of the stage. </param>
         /// <returns> The unique ID of the quest stage. </returns>
-        [Pure] public static string GetUniqueID( [LocalizationRequired(false)] string QuestID, [LocalizationRequired(false)] string StageID ) => $"{QuestID.ToLowerInvariant()}.{StageID.ToLowerInvariant()}";
+        [Pure, MustUseReturnValue]
+        [return: LocalizationRequired(false)]
+        public static string GetUniqueID( [LocalizationRequired(false)] string QuestID, [LocalizationRequired(false)] string StageID ) => SaveData.GetName(QuestID, StageID);
 
         /// <summary> Starts a quest stage. </summary>
         /// <param name="QuestID"> The ID of the quest. </param>

@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 namespace LYGJ.VFX {
     [CustomEditor(typeof(ViewScaler))]
-    public sealed class ViewScalerEditor : UnityEditor.Editor {
+    public sealed class ViewScalerEditor : Editor {
 
         static TComponent? ComponentField<TComponent>( string Label, string Tooltip, TComponent Value ) where TComponent : Component => (TComponent?)EditorGUILayout.ObjectField(EditorGUIUtility.TrTextContent(Label, Tooltip), Value, typeof(TComponent), true);
 
