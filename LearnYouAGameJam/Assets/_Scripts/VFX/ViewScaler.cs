@@ -219,6 +219,7 @@ namespace LYGJ.VFX {
         }
 
         void OnValidate() {
+            if (_InputCamera == null || _OutputImage == null) { return; }
             UpdateView();
             UpdateCameras();
         }

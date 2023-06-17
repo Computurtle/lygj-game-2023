@@ -8,7 +8,7 @@ using UnityEngine;
 using Debug = UnityEngine.Debug;
 
 namespace LYGJ.EntitySystem.PlayerManagement {
-    public sealed class HeroCameraManager : SingletonMB<HeroCameraManager> {
+    public sealed class PlayerCameraManager : SingletonMB<PlayerCameraManager> {
 
         [Title("First-Person")]
         [SerializeField, Tooltip("The camera."), Required, ChildGameObjectsOnly, LabelText("Camera")]

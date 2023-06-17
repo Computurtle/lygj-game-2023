@@ -1,19 +1,13 @@
 ﻿using System;
 using System.Diagnostics;
 using LYGJ.Common;
-using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Debug = UnityEngine.Debug;
 using UnityPlayerInput = UnityEngine.InputSystem.PlayerInput;
 
 namespace LYGJ.EntitySystem.PlayerManagement {
     public sealed class PlayerInput : SingletonMB<PlayerInput> {
-
-        [SerializeField, Tooltip("The player input component."), Required, SceneObjectsOnly] UnityPlayerInput _PlayerInput = null!;
-
-        #if UNITY_EDITOR
-        void Reset() => _PlayerInput = FindObjectOfType<UnityPlayerInput>();
-        #endif
 
         InputValue[] _Inputs = Array.Empty<InputValue>();
 
@@ -56,8 +50,16 @@ namespace LYGJ.EntitySystem.PlayerManagement {
         /// <summary> The 'inventory' input. </summary>
         public static InputButton Inventory { get; private set; } = null!;
 
+        UnityPlayerInput? _PlayerInput;
+
         protected override void Awake() {
             base.Awake();
+            _PlayerInput = FindObjectOfType<UnityPlayerInput>();
+            if (_PlayerInput == null) {
+                Debug.LogError("Could not find player input!", this);
+                return;
+            }
+
             InputActionAsset Asset = _PlayerInput.actions;
             _Inputs = new InputValue[] {
                 Move             = new(Asset.FindAction("Move", true)),
