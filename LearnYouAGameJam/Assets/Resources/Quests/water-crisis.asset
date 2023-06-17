@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0183fec0f620a17408d520c800d54d07, type: 3}
+  m_Name: water-crisis
+  m_EditorClassIdentifier: 
+  <Name>k__BackingField: Water Crisis
+  S000_Mayor: {fileID: 8821616941762462369, guid: 5b91f9d0e9f2cf141a2e17d550aca82b,
+    type: 3}
+  S000_Mayor_After: {fileID: 8821616941762462369, guid: bc7d76295c44692498cdb6d0d1ad5d58,
+    type: 3}
+  S100_Barkeep_Intro: {fileID: 0}
+  S100_Barkeep_Intro_After: {fileID: 0}
+  S103_Barkeep_DoneTask: {fileID: 0}
+  S104_Barkeep_ChoseEvilOffer: {fileID: 0}
+  S200_Handyman_Intro: {fileID: 0}
+  S201_Handyman_AskHelp: {fileID: 0}
+  S202_Handyman_FoundParts: {fileID: 0}
+  S203_Handyman_DoneTask: {fileID: 0}
+  S300_Mayor_Done: {fileID: 0}

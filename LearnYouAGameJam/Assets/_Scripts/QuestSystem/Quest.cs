@@ -5,8 +5,13 @@ using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using LYGJ.Common;
+using LYGJ.DialogueSystem;
+using LYGJ.EntitySystem.NPCSystem;
+using OneOf;
 using Sirenix.OdinInspector;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
+using QuestStage = System.Func<System.Threading.CancellationToken, Cysharp.Threading.Tasks.UniTask>;
 
 namespace LYGJ.QuestSystem {
     public abstract class Quest : ScriptableObject {
@@ -34,199 +39,199 @@ namespace LYGJ.QuestSystem {
         bool IDMatchesName() => name == Key;
         #endif
 
+        protected readonly Dictionary<string, QuestStage> Stages = new();
+
+        protected bool Constructed;
+
+        /// <summary> Constructs the quest. </summary>
+        public void Construct() {
+            if (Constructed) {
+                Debug.LogWarning($"Quest {Key} has already been constructed.", this);
+                return;
+            }
+            foreach ((string ID, QuestStage Stage) in ConstructStages()) {
+                Stages.Add(ID, Stage);
+            }
+            Constructed = true;
+        }
+
         /// <summary> Constructs the stages of the quest. </summary>
         /// <returns> The stages of the quest. </returns>
-        protected abstract IEnumerable<(string ID, IQuestStateMonitor Monitor)> ConstructStages();
+        protected abstract IEnumerable<(string ID, QuestStage Stage)> ConstructStages();
 
-        // [ClearOnReload(null!)] // Can't be used in abstract classes.
-        Dictionary<string, IQuestStateMonitor>? _Stages = null;
+        /// <summary> Begins the quest. </summary>
+        /// <param name="Token"> The cancellation token which can be used to cancel the quest (such as when the scene changes). </param>
+        public void StartQuest( CancellationToken Token ) {
+            if (!Constructed) {
+                Debug.LogWarning($"Quest {Key} has not been constructed. Constructing now.", this);
+                Construct();
+                return;
+            }
+            Quests.SetCompletion(Key, Completion.Started);
+            if (Stages.Count == 0) {
+                Debug.LogWarning($"Quest {Key} has no stages.", this);
+                Quests.SetCompletion(Key, Completion.Completed);
+                return;
+            }
+            string FirstStage = Stages.Keys.First();
+            StartStage(FirstStage, Token);
+        }
 
-        /// <summary> The first stage of the quest. </summary>
-        protected virtual string FirstStage => string.Empty;
-
-        public void ConstructInternal() {
-            if (_Stages is not null) {
-                throw new InvalidOperationException("Quest has already been constructed.");
+        /// <summary> Starts the given stage of the quest. </summary>
+        /// <param name="Stage"> The stage to start. </param>
+        /// <param name="Token"> The cancellation token which can be used to cancel the quest (such as when the scene changes). </param>
+        public void StartStage( string Stage, CancellationToken Token ) {
+            if (!Stages.ContainsKey(Stage)) {
+                Debug.LogWarning($"Quest {Key} does not have a stage with ID {Stage}.", this);
+                return;
             }
 
-            _Stages = new();
-            foreach ((string ID, IQuestStateMonitor Monitor) in ConstructStages()) {
-                _Stages.Add(ID, Monitor);
-                QuestStates.Add(this.Key, ID, Monitor);
-            }
+            Quests.SetCompletion(Key, Stage, Completion.Started);
 
-            #if UNITY_EDITOR
-            void OnEditorApplicationOnplayModeStateChanged( UnityEditor.PlayModeStateChange State ) {
-                if (State == UnityEditor.PlayModeStateChange.ExitingPlayMode) {
-                    UnityEditor.EditorApplication.playModeStateChanged -= OnEditorApplicationOnplayModeStateChanged;
-                    _Stages = null;
+            void MarkDone() {
+                if (Quests.GetCompletion(Key, Stage) is Completion.Started) {
+                    Quests.SetCompletion(Key, Stage, Completion.Completed);
                 }
             }
-            UnityEditor.EditorApplication.playModeStateChanged += OnEditorApplicationOnplayModeStateChanged;
-            #endif
+            Stages[Stage](Token).ContinueWith(MarkDone).Forget(Debug.LogException);
         }
 
-        /// <summary> Starts the first stage of the quest. </summary>
-        /// <exception cref="InvalidOperationException"> Quest has not been constructed. </exception>
-        public void StartFirstStageInternal() {
-            if (_Stages is null) {
-                throw new InvalidOperationException("Quest has not been constructed.");
+        /// <inheritdoc cref="Quests.Complete(string)"/>
+        protected void Complete() => Quests.Complete(Key);
+
+        /// <inheritdoc cref="Quests.Fail(string)"/>
+        [Obsolete]
+        protected void Fail() => Quests.Fail(Key);
+
+        /// <inheritdoc cref="Quests.CompleteStage(string, string)"/>
+        protected void CompleteStage( string Stage ) => Quests.CompleteStage(Key, Stage);
+
+        /// <inheritdoc cref="Quests.FailStage(string, string)"/>
+        [Obsolete]
+        protected void FailStage( string Stage ) => Quests.FailStage(Key, Stage);
+
+        #region Template Stages
+
+        protected sealed class TalkToNPCCondition : OneOfBase<QuestStage, bool> {
+
+            /// <inheritdoc />
+            TalkToNPCCondition( OneOf<QuestStage, bool> Input ) : base(Input) { }
+
+            public static implicit operator TalkToNPCCondition( QuestStage Stage ) => new(Stage);
+
+            public static implicit operator TalkToNPCCondition( Func<UniTask> Stage ) => new((QuestStage)(QuestExtensions.QuestStageProxy)Stage);
+
+            public static implicit operator TalkToNPCCondition( Action<CancellationToken> Stage ) => new((QuestStage)(QuestExtensions.QuestStageProxy)Stage);
+
+            public static implicit operator TalkToNPCCondition( Action Stage ) => new((QuestStage)(QuestExtensions.QuestStageProxy)Stage);
+
+            public static implicit operator TalkToNPCCondition( bool Continue ) => new(Continue);
+        }
+
+        protected static QuestStage TalkToNPC( string Key, DialogueChain Chain, DialogueChain? After = null, Func<int, TalkToNPCCondition>? Condition = null ) {
+            static TalkToNPCCondition DefaultCondition( int Result ) => Result switch {
+                0 => true,
+                1 => false, // Can't continue until user selects correct option.
+                _ => throw new($"Unexpected result {Result}."),
+            };
+            Condition ??= DefaultCondition;
+
+            async UniTask Perform( CancellationToken Token ) {
+                NPCBase NPC = NPCs.Get(Key);
+                if (!NPC.TryGetDialogueGiver(out NPCDialogueGiver? Giver, Create: true, EvenIfInUse: false)) {
+                    throw new($"NPC {Key} is already awaiting some other dialogue.");
+                }
+
+                Giver.Dialogue = Chain;
+                while (true) {
+                    int Result = await Giver.WaitForInteraction(Cleanup: false, Token);
+                    if (Condition is not null) {
+                        TalkToNPCCondition ConditionResult = Condition(Result);
+                        if (ConditionResult.IsT0) {
+                            QuestStage Tk = ConditionResult.AsT0;
+                            await Tk(Token);
+                        } else {
+                            Debug.Assert(ConditionResult.IsT1);
+                            bool B = ConditionResult.AsT1;
+                            if (B) {
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (After != null) {
+                    Giver.Dialogue = After;
+                } else {
+                    Destroy(Giver);
+                }
             }
 
-            string F = FirstStage;
-            StartStageInternal(!string.IsNullOrEmpty(F) ? F : _Stages.Keys.First());
+            return Perform;
         }
 
-        /// <summary> Starts the specified stage of the quest. </summary>
-        /// <param name="StageID"> The ID of the stage to start. </param>
-        public void StartStageInternal( string StageID ) => QuestStates.StartStage(Key, StageID);
+        #endregion
     }
 
-    public abstract class QuestStateMonitor : IQuestStateMonitor {
+    public static class QuestExtensions {
+        public sealed class QuestStageProxy : OneOfBase<QuestStage, Func<UniTask>, Action<CancellationToken>, Action> {
 
-        protected readonly List<Func<QuestStateResult>> Prerequisites = new();
-        protected readonly List<Func<CancellationToken, UniTask<QuestStateResult>>> Performers = new();
+            /// <inheritdoc />
+            QuestStageProxy( OneOf<QuestStage, Func<UniTask>, Action<CancellationToken>, Action> Input ) : base(Input) { }
 
-        protected readonly List<Action> Finalisers = new();
-        protected readonly List<Action> Completers = new();
+            public static implicit operator QuestStageProxy( QuestStage                Stage ) => new(Stage);
+            public static implicit operator QuestStageProxy( Func<UniTask>             Stage ) => new(Stage);
+            public static implicit operator QuestStageProxy( Action<CancellationToken> Stage ) => new(Stage);
+            public static implicit operator QuestStageProxy( Action                    Stage ) => new(Stage);
 
-        protected bool IsComplete { get; private set; }
+            public static implicit operator QuestStage( QuestStageProxy Proxy ) => Proxy.Perform;
 
-        /// <inheritdoc cref="IQuestStateMonitor.Prerequisite"/>
-        protected virtual QuestStateResult Prerequisite() => QuestStateResult.OK;
-
-        /// <inheritdoc />
-        QuestStateResult IQuestStateMonitor.Prerequisite() {
-            QuestStateResult Result = Prerequisite();
-            if (Result != QuestStateResult.OK) {
-                return Result;
-            }
-
-            return OtherPrerequisites();
-        }
-
-        /// <summary> Checks if the additional prerequisites for the state are met, returning the first non-OK result. </summary>
-        /// <returns> The first non-OK result, or <see cref="QuestStateResult.OK"/> if all prerequisites are met. </returns>
-        protected QuestStateResult OtherPrerequisites() {
-            foreach (Func<QuestStateResult> Prerequisite in Prerequisites) {
-                QuestStateResult Result = Prerequisite();
-                if (Result != QuestStateResult.OK) {
-                    return Result;
-                }
-            }
-
-            return QuestStateResult.OK;
-        }
-
-        /// <inheritdoc />
-        public IQuestStateMonitor AddPrerequisite( Func<QuestStateResult> Prerequisite ) {
-            Prerequisites.Add(Prerequisite);
-            return this;
-        }
-
-        /// <inheritdoc cref="IQuestStateMonitor.Perform"/>
-        protected abstract UniTask<QuestStateResult> Perform( CancellationToken Token );
-
-        /// <inheritdoc />
-        async UniTask<QuestStateResult> IQuestStateMonitor.Perform( CancellationToken Token ) {
-            QuestStateResult Result = await Perform(Token);
-            if (Result != QuestStateResult.OK) {
-                return Result;
-            }
-
-            return await OtherPerformers(Token);
-        }
-
-        /// <summary> Checks if the additional performers for the state are met, returning the first non-OK result. </summary>
-        /// <param name="Token"> The cancellation token to use. </param>
-        /// <returns> The asynchronous operation which returns the first non-OK result, or <see cref="QuestStateResult.OK"/> if all performers are met. </returns>
-        protected async UniTask<QuestStateResult> OtherPerformers( CancellationToken Token ) {
-            foreach (Func<CancellationToken, UniTask<QuestStateResult>> Performer in Performers) {
-                if (Token.IsCancellationRequested) { return QuestStateResult.RequiresImmediateRestart(); } // Despite being an 'immediate' restart, scene change still takes precedence.
-
-                QuestStateResult Result = await Performer(Token);
-                if (Result != QuestStateResult.OK) {
-                    return Result;
-                }
-            }
-
-            return QuestStateResult.OK;
-        }
-
-        /// <inheritdoc />
-        public IQuestStateMonitor AddPerformer( Func<CancellationToken, UniTask<QuestStateResult>> Performer ) {
-            Performers.Add(Performer);
-            return this;
-        }
-
-        /// <inheritdoc />
-        void IQuestStateMonitor.Finalise() {
-            Finalise();
-            foreach (Action Finaliser in Finalisers) {
-                Finaliser();
-            }
-
-            if (!IsComplete) {
-                IsComplete = true;
-                Complete();
-                foreach (Action Completer in Completers) {
-                    Completer();
+            async UniTask Perform( CancellationToken Token ) {
+                if (TryPickT0(out QuestStage T0, out OneOf<Func<UniTask>, Action<CancellationToken>, Action> R)) {
+                    await T0(Token);
+                } else if (R.TryPickT0(out Func<UniTask> T1, out OneOf<Action<CancellationToken>, Action> R1)) {
+                    await T1();
+                } else if (R1.TryPickT0(out Action<CancellationToken> T2, out Action T3)) {
+                    T2(Token);
+                } else {
+                    T3();
                 }
             }
         }
 
-        /// <inheritdoc />
-        public IQuestStateMonitor AddFinaliser( Action Finaliser ) {
-            Finalisers.Add(Finaliser);
-            return this;
+        sealed class QuestStageConcat {
+            readonly QuestStage[] _Stages;
+
+            public QuestStageConcat( params QuestStage[] Stages ) => _Stages = Stages;
+
+            public static implicit operator QuestStage( QuestStageConcat Concat ) => Concat.Perform;
+
+            async UniTask Perform( CancellationToken Token ) {
+                foreach (QuestStage Stage in _Stages) {
+                    await Stage(Token);
+                }
+            }
         }
 
-        /// <inheritdoc />
-        public IQuestStateMonitor AddCompleter( Action Completer ) {
-            Completers.Add(Completer);
-            return this;
-        }
+        /// <summary> Concatenates another stage to the end of the given stage. </summary>
+        /// <param name="A"> The first stage. </param>
+        /// <param name="B"> The second stage. </param>
+        /// <returns> A stage which performs the first stage, then the second stage. </returns>
+        public static QuestStage Then( this QuestStageProxy A, QuestStageProxy B ) => new QuestStageConcat(A, B);
 
-        /// <inheritdoc cref="IQuestStateMonitor.Finalise"/>
-        protected virtual void Finalise() { }
+        /// <inheritdoc cref="Then(QuestStageProxy, QuestStageProxy)"/>
+        public static QuestStage Then( this QuestStage A, QuestStage B_T0 ) => new QuestStageConcat(A, B_T0);
 
-        /// <summary> Called when the state is completed. </summary>
-        protected virtual void Complete() { }
-    }
+        /// <inheritdoc cref="Then(QuestStageProxy, QuestStageProxy)"/>
+        public static QuestStage Then( this QuestStage A, Func<UniTask> B_T1 ) => new QuestStageConcat(A, (QuestStageProxy)B_T1);
 
-    public interface IQuestStateMonitor {
+        /// <inheritdoc cref="Then(QuestStageProxy, QuestStageProxy)"/>
+        public static QuestStage Then( this QuestStage A, Action<CancellationToken> B_T2 ) => new QuestStageConcat(A, (QuestStageProxy)B_T2);
 
-        /// <summary> Determines if the prerequisite for the state is met. </summary>
-        /// <returns> <see langword="true"/> if the prerequisite for the state is met; otherwise, <see langword="false"/>. </returns>
-        QuestStateResult Prerequisite();
+        /// <inheritdoc cref="Then(QuestStageProxy, QuestStageProxy)"/>
+        public static QuestStage Then( this QuestStage A, Action B_T3 ) => new QuestStageConcat(A, (QuestStageProxy)B_T3);
 
-        /// <summary> Performs the state. </summary>
-        /// <param name="Token"> The cancellation token. Cancelled when the scene changes. </param>
-        /// <returns> The asynchronous operation that completes when the state is finished. </returns>
-        UniTask<QuestStateResult> Perform( CancellationToken Token );
-
-        /// <summary> The finaliser to call whenever revisiting the state. </summary>
-        void Finalise();
-
-        /// <summary> Adds another prerequisite to the state. </summary>
-        /// <param name="Prerequisite"> The prerequisite to add. </param>
-        /// <returns> The monitor. </returns>
-        IQuestStateMonitor AddPrerequisite( Func<QuestStateResult> Prerequisite );
-
-        /// <summary> Adds another performer to the state. </summary>
-        /// <param name="Performer"> The performer to add. </param>
-        /// <returns> The monitor. </returns>
-        IQuestStateMonitor AddPerformer( Func<CancellationToken, UniTask<QuestStateResult>> Performer );
-
-        /// <summary> Adds a finaliser to the state. </summary>
-        /// <param name="Finaliser"> The finaliser to add. </param>
-        /// <returns> The monitor. </returns>
-        IQuestStateMonitor AddFinaliser( Action Finaliser );
-
-        /// <summary> Adds a completer to the state. </summary>
-        /// <param name="Completer"> The completer to add. </param>
-        /// <returns> The monitor. </returns>
-        IQuestStateMonitor AddCompleter( Action Completer );
-
+        /// <inheritdoc cref="Then(QuestStageProxy, QuestStageProxy)"/>
+        public static QuestStage Then( this QuestStage A, QuestStageProxy B ) => new QuestStageConcat(A, B);
     }
 }
