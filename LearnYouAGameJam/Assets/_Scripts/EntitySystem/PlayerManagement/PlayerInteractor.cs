@@ -145,7 +145,6 @@ namespace LYGJ.EntitySystem.PlayerManagement {
                 }
 
                 if (!TryGetComponentInParent(New, out IInteractable? Interactable)) {
-                    Debug.LogWarning($"{New} does not have any component that inherits from {nameof(IInteractable)}, despite being on the {_Layer} layer.", New);
                     return;
                 }
 
@@ -165,7 +164,6 @@ namespace LYGJ.EntitySystem.PlayerManagement {
         void OnInteractPressed() {
             if (_Last is { } L) {
                 if (!TryGetComponentInParent(L.Collider, out IInteractable? Interactable)) {
-                    Debug.LogWarning($"{_Last} does not have any component that inherits from {nameof(IInteractable)}, despite being on the {_Layer} layer.", L.Interactable as Object);
                     return;
                 }
 

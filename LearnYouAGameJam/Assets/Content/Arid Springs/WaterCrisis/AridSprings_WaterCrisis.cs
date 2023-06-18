@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using LYGJ.DialogueSystem;
+using LYGJ.EntitySystem;
+using LYGJ.EntitySystem.EnemyManagement;
 using LYGJ.EntitySystem.NPCSystem;
+using LYGJ.InventoryManagement;
 using LYGJ.QuestSystem;
 using LYGJ.SaveManagement;
 using Sirenix.OdinInspector;
@@ -31,12 +34,27 @@ namespace LYGJ.Content.AridSprings {
             _S103 = "return-to-barkeep",
             _S104 = "accepted-evil-offer",
             _S200 = "find-the-well",
-            _S201 = "find-parts",
-            _S202 = "return-to-handyman",
-            _S203 = "repaired-the-well",
+            _S201 = "enter-the-mine",
+            _S202 = "find-parts",
+            _S203 = "return-to-handyman",
+            _S204 = "repaired-the-well",
             _S300 = "return-to-mayor",
 
             _OutcomeKey = "repaired-well";
+
+        const EnemyType _Bandit = EnemyType.Bandit;
+
+        const int
+            _NeededGears    = 3,
+            _NeededPipes    = 2,
+            _NeededSprings  = 1,
+            _BanditKillGoal = 3;
+
+        [AssetsOnly, Required, AssetSelector]
+        public Item
+            Gear   = null!,
+            Pipe   = null!,
+            Spring = null!;
 
         [AssetsOnly, Required, AssetSelector]
         public DialogueChain
@@ -87,6 +105,8 @@ namespace LYGJ.Content.AridSprings {
                         CompleteStage(_S000);
                         StartStage(_S100, Token);
                         StartStage(_S200, Token);
+                        Well Well = Objects.Get<Well>(_Well);
+                        Well.SetInteractability(true);
                     }
                 ));
 
@@ -104,15 +124,22 @@ namespace LYGJ.Content.AridSprings {
                         StartStage(_S102, Token);
                     }
                 ));
-            // TODO: _S102 -- detect when player kills bandits
+            yield return (_S102, KillEnemy(_Bandit, _BanditKillGoal)
+                .Then(
+                    Token => {
+                        CompleteStage(_S102);
+                        StartStage(_S103, Token);
+                    }
+                ));
             yield return (_S103, TalkToNPC(_Barkeep, S103_Barkeep_DoneTask, Condition: C => C switch {
-                    1 => (Action)(() => {
+                    0 => (Action)(() => {
+                        Debug.Log("S103: Accepted bad offer.");
                         NPCBase Barkeep = NPCs.Get(_Barkeep);
                         Barkeep.SetAmbientDialogue(S104_Barkeep_ChoseEvilOffer);
                         CompleteStage(_S104);
                         ThisSave_Outcome = Outcome.AcceptedEvilOffer;
                     }),
-                    -1 => false,
+                    1 => false,
                     _ => throw new ArgumentOutOfRangeException(nameof(C), C, null)
                 })
                 .Then(
@@ -134,6 +161,8 @@ namespace LYGJ.Content.AridSprings {
                         } while (Result != 0);
                         NPCBase Handyman = NPCs.Get(_Handyman);
                         Handyman.SetAmbientDialogue(S201_Handyman_AskHelp);
+                        Well Well = Objects.Get<Well>(_Well);
+                        Well.SetInteractability(false);
                     }
                 )
                 .Then(
@@ -142,12 +171,32 @@ namespace LYGJ.Content.AridSprings {
                         StartStage(_S201, Token);
                     }
                 ));
-            // TODO: _S201 -- detect when player finds the parts
-            yield return (_S202, TalkToNPC(_Handyman, S202_Handyman_FoundParts, S203_Handyman_DoneTask)
+            yield return (_S201, EnterTriggerZone(Mine.ID)
+                .Then(
+                    Token => {
+                        CompleteStage(_S201);
+                        StartStage(_S202, Token);
+                    }
+                ));
+            yield return(_S202, AchieveRecipe(
+                Recipe: new(
+                    Result: ItemInstance.Empty,
+                    Ingredients: new ItemInstance[] {
+                        new(Gear, _NeededGears),
+                        new(Pipe, _NeededPipes),
+                        new(Spring, _NeededSprings)
+                    }))
                 .Then(
                     Token => {
                         CompleteStage(_S202);
+                        StartStage(_S203, Token);
+                    }
+                ));
+            yield return (_S203, TalkToNPC(_Handyman, S202_Handyman_FoundParts, S203_Handyman_DoneTask)
+                .Then(
+                    Token => {
                         CompleteStage(_S203);
+                        CompleteStage(_S204);
                         ThisSave_Outcome = Outcome.RepairedWell;
                         StartStage(_S300, Token);
                     }

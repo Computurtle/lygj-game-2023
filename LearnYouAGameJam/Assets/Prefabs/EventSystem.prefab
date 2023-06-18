@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 574107467299452507}
   - component: {fileID: 1126673350930901215}
   - component: {fileID: 8292194050373356087}
+  - component: {fileID: 2119993548178121824}
   m_Layer: 0
   m_Name: EventSystem
   m_TagString: Untagged
@@ -138,3 +139,18 @@ MonoBehaviour:
   _HideOnStart: 1
   _ShowOnFocusLoss: 1
   _ReapplyOnFocusGain: 1
+--- !u!114 &2119993548178121824
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3506758803127785901}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cce960cd86744507976cf2a3f1763764, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _OnEnemyKilled:
+    m_PersistentCalls:
+      m_Calls: []

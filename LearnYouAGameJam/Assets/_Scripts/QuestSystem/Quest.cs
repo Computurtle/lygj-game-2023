@@ -5,10 +5,13 @@ using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using LYGJ.Common;
+using LYGJ.Common.Enums;
 using LYGJ.DialogueSystem;
 using LYGJ.EntitySystem;
+using LYGJ.EntitySystem.EnemyManagement;
 using LYGJ.EntitySystem.NPCSystem;
 using LYGJ.Interactables;
+using LYGJ.InventoryManagement;
 using LYGJ.SceneManagement;
 using OneOf;
 using Sirenix.OdinInspector;
@@ -159,12 +162,13 @@ namespace LYGJ.QuestSystem {
                         if (ConditionResult.IsT0) {
                             QuestStage Tk = ConditionResult.AsT0;
                             await Tk(Token);
-                        } else {
-                            Debug.Assert(ConditionResult.IsT1);
-                            bool B = ConditionResult.AsT1;
-                            if (B) {
-                                break;
-                            }
+                            break;
+                        }
+
+                        Debug.Assert(ConditionResult.IsT1);
+                        bool B = ConditionResult.AsT1;
+                        if (B) {
+                            break;
                         }
                     }
                 }
@@ -208,6 +212,26 @@ namespace LYGJ.QuestSystem {
                 return Zone.WaitForExit(Token);
             }
 
+            return Perform;
+        }
+
+        protected static QuestStage AchieveItemAmount( ItemInstance Item, NumericComparison Comparison = NumericComparison.GreaterThanOrEqual ) {
+            UniTask Perform(CancellationToken Token) => Inventory.WaitForAmount(Item, Comparison, Token);
+            return Perform;
+        }
+
+        protected static QuestStage AchieveItemAmount( Item Item, uint Amount, NumericComparison Comparison = NumericComparison.GreaterThanOrEqual ) {
+            UniTask Perform(CancellationToken Token) => Inventory.WaitForAmount(Item, Amount, Comparison, Token);
+            return Perform;
+        }
+
+        protected static QuestStage AchieveRecipe( Recipe Recipe ) {
+            UniTask Perform(CancellationToken Token) => Inventory.WaitForRecipe(Recipe, Token);
+            return Perform;
+        }
+
+        protected static QuestStage KillEnemy( EnemyType Type, uint Amount = 1u ) {
+            UniTask Perform( CancellationToken Token ) => Enemies.WaitForKills(Type, Amount, Token);
             return Perform;
         }
 

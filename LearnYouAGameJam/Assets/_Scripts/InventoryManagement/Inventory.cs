@@ -1,15 +1,20 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using LYGJ.Common;
+using LYGJ.Common.Enums;
+using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.Events;
 
 namespace LYGJ.InventoryManagement {
     public sealed class Inventory : SingletonMB<Inventory>, IReadOnlyCollection<ItemInstance> {
+        [ShowInInspector, ListDrawerSettings(ShowFoldout = false, IsReadOnly = true, ShowPaging = true, NumberOfItemsPerPage = 10)]
         readonly Dictionary<Item, uint> _Inventory = new(16);
 
-        [SerializeField, Tooltip("Raised when an item is added to the inventory.")]
+        [SerializeField, Tooltip("Raised when an item is added to the inventory."), FoldoutGroup("Events")]
         UnityEvent<ItemInstance> _OnItemAdded = new();
 
         /// <summary> Raised when an item is added to the inventory. </summary>
@@ -18,7 +23,7 @@ namespace LYGJ.InventoryManagement {
             remove => Instance._OnItemAdded.RemoveListener(value);
         }
 
-        [SerializeField, Tooltip("Raised when an item is removed from the inventory.")]
+        [SerializeField, Tooltip("Raised when an item is removed from the inventory."), FoldoutGroup("Events")]
         UnityEvent<ItemInstance> _OnItemRemoved = new();
 
         /// <summary> Raised when an item is removed from the inventory. </summary>
@@ -27,7 +32,7 @@ namespace LYGJ.InventoryManagement {
             remove => Instance._OnItemRemoved.RemoveListener(value);
         }
 
-        [SerializeField, Tooltip("Raised when the inventory is cleared.")]
+        [SerializeField, Tooltip("Raised when the inventory is cleared."), FoldoutGroup("Events")]
         UnityEvent _OnInventoryCleared = new();
 
         /// <summary> Raised when the inventory is cleared. </summary>
@@ -38,12 +43,13 @@ namespace LYGJ.InventoryManagement {
 
         /// <summary> Adds the specified item to the inventory. </summary>
         /// <param name="Item"> The item to add. </param>
-        public static void Add( ItemInstance Item ) => Instance.AddInternal(Item);
+        public static void Add( in ItemInstance Item ) => Instance.AddInternal(Item);
 
-        /// <inheritdoc cref="Add(ItemInstance)"/>
+        /// <summary> Adds the specified item to the inventory. </summary>
         /// <param name="Item"> The item to add. </param>
         /// <param name="Amount"> The amount of the item to add. </param>
-        public static void Add( Item Item, uint Amount = 1u ) {
+        [Button, HideInEditorMode]
+        public static void Add( Item Item, [MinValue(1)] uint Amount = 1u ) {
             if (Amount == 0u) {
                 Debug.LogWarning("Cannot add zero items.");
                 return;
@@ -51,7 +57,7 @@ namespace LYGJ.InventoryManagement {
             Instance.AddInternal(new(Item, Amount));
         }
 
-        void AddInternal( ItemInstance Item ) {
+        void AddInternal( in ItemInstance Item ) {
             if (_Inventory.ContainsKey(Item.Item)) {
                 _Inventory[Item.Item] += Item.Amount;
             } else {
@@ -69,20 +75,24 @@ namespace LYGJ.InventoryManagement {
         /// <summary> Removes the specified item from the inventory. </summary>
         /// <param name="Item"> The item to remove. </param>
         /// <param name="Amount"> The amount of the item to remove. </param>
-        public static void Remove( Item Item, uint Amount = 1u ) => Instance.RemoveInternal(Item, Amount);
+        [Button, HideInEditorMode]
+        public static void Remove( Item Item, [MinValue(1)] uint Amount = 1u ) => Instance.RemoveInternal(Item, Amount);
 
-        void RemoveInternal(Item Item, uint Amount) {
+        void RemoveInternal( Item Item, uint Amount ) {
             if (!_Inventory.TryGetValue(Item, out uint CurrentAmount)) {
                 throw new KeyNotFoundException($"Item {Item} is not in the inventory.");
             }
+
             if (CurrentAmount < Amount) {
                 throw new NotEnoughItemsException(Item, Amount, CurrentAmount);
             }
+
             if (CurrentAmount == Amount) {
                 _Inventory.Remove(Item);
             } else {
                 _Inventory[Item] -= Amount;
             }
+
             _OnItemRemoved.Invoke(new(Item, Amount));
         }
 
@@ -90,12 +100,14 @@ namespace LYGJ.InventoryManagement {
         /// <param name="Item"> The item to remove. </param>
         /// <exception cref="KeyNotFoundException"> Thrown if the item is not in the inventory. </exception>
         /// <returns> The amount of the item that was removed. </returns>
+        [Button, HideInEditorMode]
         public static uint RemoveAll( Item Item ) => Instance.RemoveAllInternal(Item);
 
-        uint RemoveAllInternal(Item Item) {
+        uint RemoveAllInternal( Item Item ) {
             if (!_Inventory.TryGetValue(Item, out uint Amount)) {
                 throw new KeyNotFoundException($"Item {Item} is not in the inventory.");
             }
+
             _Inventory.Remove(Item);
             _OnItemRemoved.Invoke(new(Item, Amount));
             return Amount;
@@ -104,17 +116,20 @@ namespace LYGJ.InventoryManagement {
         /// <summary> Checks if the inventory contains the specified item. </summary>
         /// <param name="Item"> The item to check for. </param>
         /// <returns> <see langword="true"/> if the inventory contains the item; otherwise, <see langword="false"/>. </returns>
+        [Button, HideInEditorMode]
         public static bool Contains( Item Item ) => Instance._Inventory.ContainsKey(Item);
 
         /// <summary> Checks if the inventory contains the specified item in the given amount. </summary>
         /// <param name="Item"> The item to check for. </param>
         /// <returns> <see langword="true"/> if the inventory contains an equivalent or greater amount of the item; otherwise, <see langword="false"/>. </returns>
-        public static bool Contains( ItemInstance Item ) => Instance._Inventory.TryGetValue(Item.Item, out uint Amount) && Amount >= Item.Amount;
+        public static bool Contains( in ItemInstance Item ) => Instance._Inventory.TryGetValue(Item.Item, out uint Amount) && Amount >= Item.Amount;
 
-        /// <inheritdoc cref="Contains(Item)"/>
+        /// <summary> Checks if the inventory contains the specified item in the given amount. </summary>
         /// <param name="Item"> The item to check for. </param>
         /// <param name="Amount"> The amount of the item to check for. </param>
-        public static bool Contains( Item Item, uint Amount ) {
+        /// <returns> <see langword="true"/> if the inventory contains an equivalent or greater amount of the item; otherwise, <see langword="false"/>. </returns>
+        [Button, HideInEditorMode]
+        public static bool Contains( Item Item, [MinValue(1)] uint Amount ) {
             if (Amount == 0u) {
                 Debug.LogWarning("Should not check for zero items.");
                 return true;
@@ -122,14 +137,39 @@ namespace LYGJ.InventoryManagement {
             return Instance._Inventory.TryGetValue(Item, out uint CurrentAmount) && CurrentAmount >= Amount;
         }
 
+        /// <summary> Checks if the inventory contains the specified items in the given amounts. </summary>
+        /// <param name="Recipe"> The recipe to check for. </param>
+        /// <returns> <see langword="true"/> if the inventory contains an equivalent or greater amount of the items; otherwise, <see langword="false"/>. </returns>
+        public static bool Contains( in Recipe Recipe ) {
+            foreach (ItemInstance Ingredient in Recipe.Ingredients) {
+                if (!Contains(Ingredient)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
         /// <summary> Gets the amount of the specified item in the inventory. </summary>
         /// <param name="Item"> The item to get the amount of. </param>
         /// <returns> The amount of the item in the inventory, or <c>0</c> if the item is not in the inventory. </returns>
+        [Button, HideInEditorMode]
         public static uint Count( Item Item ) => Instance._Inventory.TryGetValue(Item, out uint Amount) ? Amount : 0u;
 
         /// <summary> Gets the amount of unique items in the inventory. </summary>
         /// <returns> The amount of unique items in the inventory. </returns>
         public static int UniqueItemCount => Instance._Inventory.Count;
+
+        /// <summary> Clears the inventory. </summary>
+        [Button, HideInEditorMode]
+        public static void Clear() => Instance.ClearInternal();
+
+        void ClearInternal() {
+            if (_Inventory.Count == 0) {
+                return;
+            }
+            _Inventory.Clear();
+            _OnInventoryCleared.Invoke();
+        }
 
         #region Implementation of IEnumerable
 
@@ -154,6 +194,65 @@ namespace LYGJ.InventoryManagement {
         int IReadOnlyCollection<ItemInstance>.Count => _Inventory.Count;
 
         #endregion
+
+        /// <summary> Waits for an item amount to be achieved. </summary>
+        /// <remarks> If more than one item is requested, the task will complete when the amount of the item in the inventory is greater than or equal to the requested amount. </remarks>
+        /// <param name="Item"> The item to wait for. </param>
+        /// <param name="Comparison"> The comparison to use when waiting for the item. </param>
+        /// <param name="Token"> The token to cancel the wait. </param>
+        /// <returns> A task that completes when the item amount is achieved. </returns>
+        public static async UniTask WaitForAmount( ItemInstance Item, NumericComparison Comparison = NumericComparison.GreaterThanOrEqual, CancellationToken Token = default ) {
+            if (Contains(Item)) {
+                return;
+            }
+
+            UniTaskCompletionSource Source = new();
+
+            await using CancellationTokenRegistration Registration = Token.Register(() => Source.TrySetCanceled());
+            Instance._OnItemAdded.AddListener(OnItemChanged);
+            Instance._OnItemRemoved.AddListener(OnItemChanged);
+            await Source.Task;
+            Instance._OnItemAdded.RemoveListener(OnItemChanged);
+            Instance._OnItemRemoved.RemoveListener(OnItemChanged);
+
+            void OnItemChanged( ItemInstance Changed ) {
+                if (Changed.Item == Item && Count(Item).Compare(Item.Amount, Comparison)) {
+                    Source.TrySetResult();
+                }
+            }
+        }
+
+        /// <inheritdoc cref="WaitForAmount(ItemInstance,NumericComparison,CancellationToken)"/>
+        /// <param name="Item"> The item to wait for. </param>
+        /// <param name="Amount"> The amount the inventory must contain before the task completes. </param>
+        /// <param name="Comparison"> The comparison to use when waiting for the item. </param>
+        /// <param name="Token"> The token to cancel the wait. </param>
+        public static UniTask WaitForAmount( Item Item, uint Amount = 1u, NumericComparison Comparison = NumericComparison.GreaterThanOrEqual, CancellationToken Token = default ) => WaitForAmount(new (Item, Amount), Comparison, Token);
+
+        /// <summary> Waits for a recipe to be craftable. </summary>
+        /// <param name="Recipe"> The recipe to wait for. </param>
+        /// <param name="Token"> The token to cancel the wait. </param>
+        /// <returns> A task that completes when the recipe is craftable. </returns>
+        public static async UniTask WaitForRecipe( Recipe Recipe, CancellationToken Token = default ) {
+            if (Contains(Recipe)) {
+                return;
+            }
+
+            UniTaskCompletionSource Source = new();
+
+            await using CancellationTokenRegistration Registration = Token.Register(() => Source.TrySetCanceled());
+            Instance._OnItemAdded.AddListener(OnItemChanged);
+            Instance._OnItemRemoved.AddListener(OnItemChanged);
+            await Source.Task;
+            Instance._OnItemAdded.RemoveListener(OnItemChanged);
+            Instance._OnItemRemoved.RemoveListener(OnItemChanged);
+
+            void OnItemChanged( ItemInstance Changed ) {
+                if (Contains(Recipe)) {
+                    Source.TrySetResult();
+                }
+            }
+        }
 
     }
 

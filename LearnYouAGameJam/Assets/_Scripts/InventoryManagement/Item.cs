@@ -5,6 +5,8 @@ using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace LYGJ.InventoryManagement {
+    [AssetsOnly, AssetSelector]
+    [CreateAssetMenu(fileName = "New Item", menuName = "LYGJ/Inventory/Item")]
     public sealed class Item : ScriptableObject, IEquatable<Item>, IComparable<Item>, IComparable {
         /// <summary> The item ID. </summary>
         [field: SerializeField, Tooltip("The item ID.")] public string ID { get; private set; } = string.Empty;
@@ -18,9 +20,9 @@ namespace LYGJ.InventoryManagement {
         #if UNITY_EDITOR
         void Reset() {
             string Path = UnityEditor.AssetDatabase.GetAssetPath(this);
-            string Name = System.IO.Path.GetFileNameWithoutExtension(Path);
-            ID        = Name;
-            this.Name = Name.ConvertNamingConvention(NamingConvention.TitleCase);
+            string FileName = System.IO.Path.GetFileNameWithoutExtension(Path);
+            ID   = FileName;
+            Name = FileName.ConvertNamingConvention(NamingConvention.TitleCase);
         }
         #endif
 
@@ -112,13 +114,19 @@ namespace LYGJ.InventoryManagement {
         /// <param name="Amount"> The item amount. </param>
         /// <exception cref="ArgumentNullException"> Thrown if <paramref name="Item"/> is null. </exception>
         /// <exception cref="ArgumentOutOfRangeException"> Thrown if <paramref name="Amount"/> is zero. </exception>
-        public ItemInstance( Item Item, in uint Amount = 1u ) {
-            if (Item   == null) { throw new ArgumentNullException(nameof(Item), "Item cannot be null."); }
-            if (Amount == 0u) { throw new ArgumentOutOfRangeException(nameof(Amount), Amount, "Amount must be greater than zero."); }
+        public ItemInstance( Item Item, in uint Amount = 1u ) : this(Item, Amount, false) { }
 
+        ItemInstance( Item Item, in uint Amount, bool BypassChecks ) {
+            if (!BypassChecks) {
+                if (Item   == null) { throw new ArgumentNullException(nameof(Item), "Item cannot be null."); }
+                if (Amount == 0u) { throw new ArgumentOutOfRangeException(nameof(Amount), Amount, "Amount must be greater than zero."); }
+            }
             this.Item   = Item;
             this.Amount = Amount;
         }
+
+        /// <summary> An empty item instance. </summary>
+        public static ItemInstance Empty => new(null!, 0u, true);
 
         #region Casts
 

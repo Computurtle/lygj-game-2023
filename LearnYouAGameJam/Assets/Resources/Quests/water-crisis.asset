@@ -13,6 +13,9 @@ MonoBehaviour:
   m_Name: water-crisis
   m_EditorClassIdentifier: 
   <Name>k__BackingField: Water Crisis
+  Gear: {fileID: 11400000, guid: 3e880b80fc84ba04191c817876a959d3, type: 2}
+  Pipe: {fileID: 11400000, guid: e66dc08cd7d1c8c47849c8c9a54347be, type: 2}
+  Spring: {fileID: 11400000, guid: a8005249cf8bd24498006c524c1eacec, type: 2}
   S000_Mayor: {fileID: 8821616941762462369, guid: 5b91f9d0e9f2cf141a2e17d550aca82b,
     type: 3}
   S000_Mayor_After: {fileID: 8821616941762462369, guid: bc7d76295c44692498cdb6d0d1ad5d58,
