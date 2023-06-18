@@ -92,12 +92,14 @@ namespace LYGJ.DialogueSystem {
         [Title("Text")]
         [SerializeField, Tooltip("The text component for the speaker's name."), Required, ChildGameObjectsOnly]
         TMP_Text _SpeakerText = null!;
+        [SerializeField, Tooltip("The format for the speaker's name.")] string _SpeakerFormat = "{0}:";
         [SerializeField, Tooltip("The text animator for the dialogue."), Required, ChildGameObjectsOnly]
-        TextAnimatorPlayer _DialogueText = null!;
+        Dialogue_UI_TAnimPlayer _DialogueText = null!;
+        [SerializeField, Tooltip("The lookup for character voices."), AssetsOnly, AssetSelector]
+        VoiceCollectionLookup? _VoiceLookup = null;
 
         string SpeakerText {
-            get => _SpeakerText.text;
-            set => _SpeakerText.text = value;
+            set => _SpeakerText.text = string.Format(_SpeakerFormat, value);
         }
 
         static UniTask HideTextAsync( TextAnimatorPlayer Animator ) => Animator.DisappearTextRoutine().ToUniTask();
@@ -116,6 +118,14 @@ namespace LYGJ.DialogueSystem {
             } else if (Descriptor != null) {
                 Speaker = Descriptor.Name;
             }
+
+            if (_VoiceLookup != null) {
+                if (Descriptor != null) {
+                    _DialogueText.CharacterSFX = _VoiceLookup[Descriptor.Voice];
+                }
+            } else {
+                _DialogueText.CharacterSFX = null;
+            }
             SpeakerText = Speaker;
             Token = CancellationTokenSource.CreateLinkedTokenSource(Token, this.GetCancellationTokenOnDestroy()).Token;
             await SetVisible(true, Token);
@@ -125,30 +135,31 @@ namespace LYGJ.DialogueSystem {
         // UniTask ClearText() => HideTextAsync(_DialogueText);
 
         [Title("Choices")]
-        [SerializeField, Tooltip("The container for the choice buttons."), Required, ChildGameObjectsOnly] RectTransform _ChoiceContainer = null!;
-        [SerializeField, Tooltip("The prefab(s) for the choice buttons."), AssetsOnly] Button[] _ChoicePrefabs = Array.Empty<Button>();
-
-        Button ChoicePrefab => _ChoicePrefabs.GetRandom();
+        [SerializeField, Tooltip("The container for the choices."), Required, ChildGameObjectsOnly] RectTransform _ChoiceContainer = null!;
+        [SerializeField, Tooltip("The prefab for choices."), Required, AssetsOnly] Dialogue_UI_Choice _ChoicePrefab = null!;
 
         async UniTask<int> SpawnChoices( IEnumerable<string> Choices ) {
             Anim_Choice = true;
-            UniTaskCompletionSource<int> Task = new();
+            UniTaskCompletionSource<int> Task    = new();
+            List<Dialogue_UI_Choice>     Buttons = new();
 
             int I = 0;
             foreach (string? Choice in Choices) {
-                Button Button = Pool<Button>.Get(ChoicePrefab, _ChoiceContainer);
-                Button.GetComponentInChildren<TMP_Text>().text = Choice;
-
-                int J = I;
-                void Callback() => Task.TrySetResult(J);
-
-                Button.onClick.RemoveAllListeners();
-                Button.onClick.AddListener(Callback);
+                Dialogue_UI_Choice Button = Pool<Dialogue_UI_Choice>.Get(_ChoicePrefab, _ChoiceContainer);
+                Button.Setup(Choice, I, Idx => Task.TrySetResult(Idx));
+                Buttons.Add(Button);
+                if (I == 0) {
+                    Button.Focus();
+                }
                 I++;
             }
             CancellationToken Token = this.GetCancellationTokenOnDestroy();
             await SetVisible(true, Token);
-            int Result = await Task.Task.AttachExternalCancellation(Token);
+            (_, int Result) = await Task.Task.AttachExternalCancellation(Token).SuppressCancellationThrow();
+            foreach (Dialogue_UI_Choice Button in Buttons) {
+                Button.Clear();
+                Pool<Dialogue_UI_Choice>.Return(Button);
+            }
             // Debug.Log($"Choice {Result} selected", this);
             return Result;
         }

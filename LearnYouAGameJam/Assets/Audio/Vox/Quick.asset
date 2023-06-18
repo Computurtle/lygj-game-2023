@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 09f695de46754d0e998f308dc96c9298, type: 3}
+  m_Name: Quick
+  m_EditorClassIdentifier: 
+  <Clips>k__BackingField:
+  - {fileID: 8300000, guid: 6ebac5ec313bae348bfd44b49e854a35, type: 3}
+  - {fileID: 8300000, guid: 5975e7c204f5e6c4d9a9fb9209d7de9f, type: 3}
+  - {fileID: 8300000, guid: 146a7b196f83cf043ac720b779655c41, type: 3}
+  - {fileID: 8300000, guid: c0c4bd1643d0d4b4e8d1dcc6fd647133, type: 3}
+  <Volume>k__BackingField: 1
+  <PitchVariance>k__BackingField: {x: 0.9, y: 1.1}
+  _UsePitchVariance: 1
+  <Mixer>k__BackingField: 5
+  <Is3D>k__BackingField: 0

@@ -7,7 +7,8 @@ namespace LYGJ.DialogueSystem {
     [CreateAssetMenu(fileName = "New Name Descriptor", menuName = "LYGJ/NPC/Name Descriptor")]
     public sealed class NPCDescriptor : ScriptableObject {
 
-        [SerializeField, Tooltip("The name of the NPC.")] string _Name;
+        [SerializeField, Tooltip("The name of the NPC.")]  string _Name;
+        [SerializeField, Tooltip("The voice of the NPC.")] Voice  _Voice;
 
         #if UNITY_EDITOR
         void Reset() {
@@ -21,6 +22,9 @@ namespace LYGJ.DialogueSystem {
 
         /// <summary> The name of the NPC. </summary>
         public string Name => _Name;
+
+        /// <summary> The voice of the NPC. </summary>
+        public Voice Voice => _Voice;
 
         /// <summary> Attempts to get the NPC descriptor with the given key. </summary>
         /// <param name="Key"> The key of the NPC descriptor. </param>

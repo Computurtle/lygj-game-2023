@@ -14,7 +14,7 @@ mayor-layla: "Anything else?"
 > "That's all for now" done
 
 :whos-ezekial
-mayor-layla: "Now, I'm no expert, but you might want to see Ezekiel." "Thats the old coot who mends things 'round here." "Lately, he's been hoverin' near the well, lookin' more worried than a cat in a doghouse." "Maybe have a word with him."
+mayor-layla: "Now, I'm no expert, but you might want to see Ezekial." "Thats the old coot who mends things 'round here." "Lately, he's been hoverin' near the well, lookin' more worried than a cat in a doghouse." "Maybe have a word with him."
 goto options
 
 :whos-bael

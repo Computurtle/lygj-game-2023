@@ -92,6 +92,10 @@ namespace LYGJ.AudioManagement {
         /// <inheritdoc cref="PlayCoroutine(AudioClip,AudioMixerGroup,float,float,Vector3?)"/>
         public static UniTask PlayAsync( AudioClip Clip, Mixer Mixer = Mixer.Master, float Volume = 1f, float Pitch = 1f, Vector3? Position = null, CancellationToken Token = default ) => PlayAsync(Clip, GetMixerGroup(Mixer), Volume, Pitch, Position, Token);
 
+        /// <summary> Gets or creates a <see cref="SFXPlayer"/>. </summary>
+        /// <returns> The <see cref="SFXPlayer"/>. </returns>
+        public static SFXPlayer GetOrCreateSFXPlayer() => Pool<SFXPlayer>.Get(Instance.transform, Prefab);
+
         #if UNITY_EDITOR
         [ExecuteOnReload]
         static void Editor_Cleanup() {

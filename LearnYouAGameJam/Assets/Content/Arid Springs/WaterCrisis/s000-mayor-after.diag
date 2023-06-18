@@ -6,7 +6,7 @@ mayor-layla: "There's two people I would consult if I were you." "Ezekial our re
 > "That's all for now" done
 
 :whos-ezekial
-mayor-layla: "Now, I'm no expert, but Ezekiel - the old coot who mends things 'round here - he's been hoverin' near the well, lookin' more worried than a cat in a doghouse." "You might want to have a word with him." "Anything else?"
+mayor-layla: "Now, I'm no expert, but Ezekial - the old coot who mends things 'round here - he's been hoverin' near the well, lookin' more worried than a cat in a doghouse." "You might want to have a word with him." "Anything else?"
 goto options
 
 :whos-bael
