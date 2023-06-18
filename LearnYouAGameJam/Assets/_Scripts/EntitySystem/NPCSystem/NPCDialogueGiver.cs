@@ -54,11 +54,7 @@ namespace LYGJ.EntitySystem.NPCSystem {
         /// <param name="Token"> The cancellation token to use. </param>
         /// <returns> The exit code of the dialogue chain. </returns>
         public async UniTask<int> WaitForInteraction( bool Cleanup, CancellationToken Token = default ) {
-            if (!Interactable || Dialogue == null) {
-                Debug.LogWarning("Cannot wait for interaction: NPC is not interactable or has no dialogue chain.");
-                return -1;
-            }
-
+            Debug.Assert(Dialogue != null, "Dialogue Giver has no dialogue chain assigned, yet WaitForInteraction was called.");
             if (_CTS != null) { throw new InvalidOperationException("Already waiting for interaction."); }
 
             _CTS = new();
@@ -90,8 +86,6 @@ namespace LYGJ.EntitySystem.NPCSystem {
         /// <param name="EvenIfInUse"> Whether to get the dialogue giver component even if it is in use. </param>
         /// <returns> <see langword="true"/> if a dialogue giver component was found or created; otherwise, <see langword="false"/>. </returns>
         public static bool TryGetDialogueGiver( this NPCBase NPC, [NotNullWhen(true)] out NPCDialogueGiver? Giver, bool Create = true, bool EvenIfInUse = true ) {
-            if (NPC == null) { throw new ArgumentNullException(nameof(NPC)); }
-
             Giver = NPC.GetComponent<NPCDialogueGiver>();
             if (Giver != null) {
                 if (Giver.IsWaitingForInteraction && !EvenIfInUse) {
@@ -106,6 +100,19 @@ namespace LYGJ.EntitySystem.NPCSystem {
 
             Giver = NPC.gameObject.AddComponent<NPCDialogueGiver>();
             return true;
+        }
+
+        /// <summary> Sets the ambient dialogue of the given NPC. </summary>
+        /// <remarks> Ambient dialogue is dialogue whose result is ignored, and is purely used as 'filler'. </remarks>
+        /// <param name="NPC"> The NPC to set the ambient dialogue of. </param>
+        /// <param name="Dialogue"> The dialogue to set. </param>
+        /// <param name="FailSilently"> Whether to fail silently if the NPC dialogue giver is already in use. </param>
+        public static void SetAmbientDialogue( this NPCBase NPC, DialogueChain Dialogue, bool FailSilently = false ) {
+            if (!NPC.TryGetDialogueGiver(out NPCDialogueGiver? Giver, Create: true, EvenIfInUse: false)) {
+                if (!FailSilently) { throw new InvalidOperationException("NPC dialogue giver is already in use."); }
+                return;
+            }
+            Giver.Dialogue = Dialogue;
         }
     }
 }

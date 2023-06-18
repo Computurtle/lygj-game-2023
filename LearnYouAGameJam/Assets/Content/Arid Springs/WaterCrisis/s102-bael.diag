@@ -1,0 +1,5 @@
+barkeep-bael: "Ha! Knew you'd do it." "Here's what we'll do, I'll lower my prices, and I'll even kick back 5 gold pieces to you every day." "Deal?"
+> "Deal" a
+:a
+barkeep-bael: "Nice doin' business with 'ya." "Better be speaking with that mayor now." "Let her know Bael is BACK IN BUSINESS BABY!"
+exit

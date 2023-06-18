@@ -9,5 +9,11 @@ namespace LYGJ.EntitySystem {
         protected virtual void Awake() => Entities.Add(this);
 
         protected virtual void OnDestroy() => Entities.Remove(this);
+
+        /// <summary> Gets or sets the position of the entity. </summary>
+        public virtual Vector3 Position {
+            get => transform.position;
+            set => transform.position = value;
+        }
     }
 }

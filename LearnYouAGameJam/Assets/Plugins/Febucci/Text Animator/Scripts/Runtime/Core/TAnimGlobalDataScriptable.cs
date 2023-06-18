@@ -19,6 +19,21 @@ namespace Febucci.UI.Core
         /// </summary>
         public const string resourcesPath = "UI/Dialogue/TextAnimator GlobalData";
 
+        #if UNITY_EDITOR
+        [UnityEditor.MenuItem("Tools/Febucci/TextAnimator/Create Global Text Animator Data", false)]
+        static void CreateGlobalData() {
+            TAnimGlobalDataScriptable asset = CreateInstance<TAnimGlobalDataScriptable>();
+            UnityEditor.ProjectWindowUtil.CreateAsset(asset, $"Assets/Resources/{resourcesPath}.asset");
+            UnityEditor.Selection.activeObject = asset;
+        }
+        [UnityEditor.MenuItem("Tools/Febucci/TextAnimator/Create Global Text Animator Data", true)]
+        static bool ValidateCreateGlobalData() {
+            bool Exists = Resources.Load<TAnimGlobalDataScriptable>(resourcesPath) != null;
+            UnityEditor.Menu.SetChecked("Tools/Febucci/Text Animator/Create Global Text Animator Data", Exists);
+            return !Exists;
+        }
+        #endif
+
         /// <summary>
         /// Gets the scriptable object from the Resources folder
         /// </summary>

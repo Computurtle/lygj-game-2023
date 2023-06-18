@@ -2,6 +2,8 @@
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using Cysharp.Threading.Tasks;
+using UnityEditor;
 using UnityEditor.AssetImporters;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
@@ -344,6 +346,38 @@ namespace LYGJ.DialogueSystem {
             Ctx.AddObjectToAsset("DialogueChain", Chain);
             Ctx.SetMainObject(Chain);
         }
+
+        #endregion
+
+    }
+
+    [CustomEditor(typeof(DialogueChainImporter))]
+    public class DialogueChainEditor : ScriptedImporterEditor {
+
+        async UniTask Perform() {
+            DialogueChainImporter Importer = (DialogueChainImporter)target;
+            DialogueChain         Chain    = AssetDatabase.LoadAssetAtPath<DialogueChain>(Importer.assetPath);
+
+            int Exit = await Dialogue.Display(Chain);
+            Debug.Log($"Dialogue ended with exit code {Exit}.", Chain);
+        }
+
+        public override void OnInspectorGUI() {
+            base.OnInspectorGUI();
+
+            if (Application.isPlaying) {
+                using (new EditorGUI.DisabledScope(Dialogue.IsRunning)) {
+                    if (GUILayout.Button("Play")) {
+                        Perform().Forget(Debug.LogException);
+                    }
+                }
+            }
+        }
+
+        #region Overrides of AssetImporterEditor
+
+        /// <inheritdoc />
+        protected override bool needsApplyRevert => false;
 
         #endregion
 

@@ -12,7 +12,8 @@ using Debug = UnityEngine.Debug;
 
 namespace LYGJ.DialogueSystem {
     public sealed class DialogueChain : ScriptableObject, IReadOnlyList<DialogueObject> {
-        [SerializeField, SerializeReference] DialogueObject[] _Objects = Array.Empty<DialogueObject>();
+        [SerializeField, SerializeReference, ListDrawerSettings(ShowFoldout = false, IsReadOnly = true, ShowPaging = true)]
+        DialogueObject[] _Objects = Array.Empty<DialogueObject>();
 
         /// <summary> The objects in the dialogue chain. </summary>
         #if UNITY_EDITOR
@@ -86,7 +87,7 @@ namespace LYGJ.DialogueSystem {
         public UniTask<int> Play() => Dialogue.Display(this);
 
         #if UNITY_EDITOR
-        [Button("Play"), HideInEditorMode, ContextMenu("Play")]
+        [ContextMenu("Play", false)]
         void Editor_Play() {
             async UniTask Perform() {
                 int Exit = await Dialogue.Display(this);
@@ -95,7 +96,7 @@ namespace LYGJ.DialogueSystem {
             Perform().Forget(Debug.LogException);
         }
         [ContextMenu("Play", true)]
-        bool Editor_Play_Validate() => Application.isPlaying;
+        bool Editor_CanPlay() => Application.isPlaying && !Dialogue.IsRunning;
 
         [MenuItem("Assets/Create/LYGJ/Dialogue/Dialogue Chain", priority = 100)] // Uses ProjectWindowUtil.CreateAsset to let the user choose the name, then deletes the proxy file, creates a new .diag file, and opens it in the user's default editor.
         static void Editor_Create() {

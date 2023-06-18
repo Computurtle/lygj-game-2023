@@ -1,9 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Threading;
 using JetBrains.Annotations;
 using LYGJ.SaveManagement;
+using LYGJ.SceneManagement;
 using UnityEngine;
 
 namespace LYGJ.QuestSystem {
@@ -30,9 +33,10 @@ namespace LYGJ.QuestSystem {
 
         /// <summary> Starts the quest with the specified ID. </summary>
         /// <param name="ID"> The ID of the quest to start. </param>
+        /// <param name="Token"> The cancellation token which can be used to cancel the quest (such as when the scene changes). </param>
         /// <exception cref="QuestNotFoundException"> Thrown if the quest with the specified ID could not be found. </exception>
         /// <exception cref="QuestAlreadyStartedException"> Thrown if the quest with the specified ID has already been started. </exception>
-        public static void Start( [LocalizationRequired(false)] string ID ) { // TODO: Remember started quests and start when game begins.
+        public static void Start( [LocalizationRequired(false)] string ID, CancellationToken Token ) { // TODO: Remember started quests and start when game begins.
             ID = ID.ToLowerInvariant();
             if (!TryGet(ID, out Quest? Quest)) {
                 throw new QuestNotFoundException(ID);
@@ -40,9 +44,12 @@ namespace LYGJ.QuestSystem {
             if (GetCompletion(ID) is not Completion.NotStarted) {
                 throw new QuestAlreadyStartedException(ID);
             }
-            Quest.ConstructInternal();
-            Quest.StartFirstStageInternal();
+            Quest.Construct();
+            Quest.StartQuest(Token);
         }
+
+        /// <inheritdoc cref="Start(string,CancellationToken)"/>
+        public static void Start( [LocalizationRequired(false)] string ID ) => Start(ID, Scenes.SceneChangeToken);
 
         [Pure, MustUseReturnValue]
         [return: LocalizationRequired(false)]
@@ -61,8 +68,8 @@ namespace LYGJ.QuestSystem {
         /// <summary> Gets the completion status of the quest stage with the specified ID. </summary>
         /// <param name="QuestID"> The ID of the quest to get the completion status of. </param>
         /// <param name="StageID"> The ID of the quest stage to get the completion status of. </param>
-        public static Completion GetCompletion( [LocalizationRequired(false)] string QuestID, [LocalizationRequired(false)] string StageID ) => Saves.Current.GetOrCreate(GetQuestSaveID(QuestID, StageID), Completion.NotStarted);
         /// <returns> The completion status of the quest stage with the specified ID. </returns>
+        public static Completion GetCompletion( [LocalizationRequired(false)] string QuestID, [LocalizationRequired(false)] string StageID ) => Saves.Current.GetOrCreate(GetQuestSaveID(QuestID, StageID), Completion.NotStarted);
 
         /// <summary> Sets the completion status of the quest stage with the specified ID. </summary>
         /// <param name="QuestID"> The ID of the quest to set the completion status of. </param>
@@ -73,19 +80,35 @@ namespace LYGJ.QuestSystem {
         /// <summary> (Re-)starts the quest stage with the specified ID. </summary>
         /// <param name="QuestID"> The ID of the quest to (re-)start. </param>
         /// <param name="StageID"> The ID of the quest stage to (re-)start. </param>
+        /// <param name="Token"> The cancellation token which can be used to cancel the quest (such as when the scene changes). </param>
         /// <exception cref="QuestNotFoundException"> Thrown if the quest with the specified ID could not be found. </exception>
-        public static void StartStage( [LocalizationRequired(false)] string QuestID, [LocalizationRequired(false)] string StageID ) {
+        public static void StartStage( [LocalizationRequired(false)] string QuestID, [LocalizationRequired(false)] string StageID, CancellationToken Token = default ) {
             if (!TryGet(QuestID, out Quest? Quest)) {
                 throw new QuestNotFoundException(QuestID);
             }
-            Quest.StartStageInternal(StageID.ToLowerInvariant());
+            Quest.StartStage(StageID.ToLowerInvariant(), Token);
         }
+
+        /// <inheritdoc cref="SetCompletion(string,Completion)"/>
+        public static void Complete( [LocalizationRequired(false)] string ID ) => SetCompletion(ID, Completion.Completed);
+
+        /// <inheritdoc cref="SetCompletion(string,string,Completion)"/>
+        public static void CompleteStage( [LocalizationRequired(false)] string QuestID, [LocalizationRequired(false)] string StageID ) => SetCompletion(QuestID, StageID, Completion.Completed);
+
+        /// <inheritdoc cref="SetCompletion(string,Completion)"/>
+        [Obsolete]
+        public static void Fail( [LocalizationRequired(false)] string ID ) => SetCompletion(ID, Completion.Failed);
+
+        /// <inheritdoc cref="SetCompletion(string,string,Completion)"/>
+        [Obsolete]
+        public static void FailStage( [LocalizationRequired(false)] string QuestID, [LocalizationRequired(false)] string StageID ) => SetCompletion(QuestID, StageID, Completion.Failed);
     }
 
     public enum Completion {
         NotStarted = -1,
         Started    = 0,
         Completed  = 1,
+        [Obsolete]
         Failed     = 2
     }
 }

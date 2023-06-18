@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0183fec0f620a17408d520c800d54d07, type: 3}
+  m_Name: water-crisis
+  m_EditorClassIdentifier: 
+  <Name>k__BackingField: Water Crisis
+  Gear: {fileID: 11400000, guid: 3e880b80fc84ba04191c817876a959d3, type: 2}
+  Pipe: {fileID: 11400000, guid: e66dc08cd7d1c8c47849c8c9a54347be, type: 2}
+  Spring: {fileID: 11400000, guid: a8005249cf8bd24498006c524c1eacec, type: 2}
+  S000_Mayor: {fileID: 8821616941762462369, guid: 5b91f9d0e9f2cf141a2e17d550aca82b,
+    type: 3}
+  S000_Mayor_After: {fileID: 8821616941762462369, guid: bc7d76295c44692498cdb6d0d1ad5d58,
+    type: 3}
+  S100_Barkeep_Intro: {fileID: 8821616941762462369, guid: ec5da016d1b9bca459919e832d841c09,
+    type: 3}
+  S100_Barkeep_Intro_After: {fileID: 8821616941762462369, guid: ce75b5f49b9c1df438349b965cd0d4be,
+    type: 3}
+  S103_Barkeep_DoneTask: {fileID: 8821616941762462369, guid: b766965ef87811c4ea8a59cf542fe06a,
+    type: 3}
+  S104_Barkeep_ChoseEvilOffer: {fileID: 8821616941762462369, guid: 469fb8d00a088a144a7e7e50965fb8b4,
+    type: 3}
+  S200_Handyman_Intro: {fileID: 8821616941762462369, guid: 957966312afea954186851df023f598d,
+    type: 3}
+  S201_Handyman_AskHelp: {fileID: 8821616941762462369, guid: 075e88273f34f2c4ea36c530f0acb74e,
+    type: 3}
+  S202_Handyman_FoundParts: {fileID: 8821616941762462369, guid: 60fb3c6916200d944897f18a77570624,
+    type: 3}
+  S203_Handyman_DoneTask: {fileID: 8821616941762462369, guid: 9150c687dfdaf3f47aaa318fac01e1b6,
+    type: 3}
+  S300_Mayor_Good: {fileID: 8821616941762462369, guid: 05dcbad2890f9d542b82db97490a63d7,
+    type: 3}
+  S300_Mayor_Evil: {fileID: 8821616941762462369, guid: 4a974ce2955478d41800057ae42c0690,
+    type: 3}

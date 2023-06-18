@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using LYGJ.Common;
 using LYGJ.Common.Datatypes.Collections;
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace LYGJ.EntitySystem.PlayerManagement {
@@ -31,6 +32,14 @@ namespace LYGJ.EntitySystem.PlayerManagement {
         /// <summary> Clears the model priority. </summary>
         /// <param name="Priority"> The priority to clear. </param>
         public static void ClearModelPriority( ModelPriority Priority ) => Instance._Shown.RemoveOverride(Priority);
+
+        [SerializeField, Tooltip("The player motor."), Required, ChildGameObjectsOnly] PlayerMotor _Motor = null!;
+
+        /// <summary> Gets or sets the player's position. </summary>
+        public static Vector3 Position {
+            get => Instance._Motor.Position;
+            set => Instance._Motor.Position = value;
+        }
     }
 
     public enum ModelPriority {

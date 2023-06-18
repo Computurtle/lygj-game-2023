@@ -181,7 +181,7 @@ namespace LYGJ.DialogueSystem {
 
         UniTask OnTextDisplayed( DialogueObject DialogueObject, string Speaker, bool SpeakerKnown, string Text, CancellationToken Token ) {
             if (!NPCDescriptor.TryGet(Speaker, out NPCDescriptor? Descriptor)) {
-                Debug.LogWarning($"No descriptor for speaker '{Speaker}'.", this);
+                Debug.LogWarning($"No descriptor for speaker '{Speaker}'. Without a descriptor, the speaker's name will be displayed as the key of the NPC as opposed to a proper display name. Create an NPC Descriptor for '{Speaker}' in the Resources/NPCs folder to fix this.", this);
             }
             return DisplayText(Speaker, SpeakerKnown, Text, Descriptor, Token);
         }
