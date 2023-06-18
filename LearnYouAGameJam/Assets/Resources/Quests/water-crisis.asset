@@ -17,12 +17,23 @@ MonoBehaviour:
     type: 3}
   S000_Mayor_After: {fileID: 8821616941762462369, guid: bc7d76295c44692498cdb6d0d1ad5d58,
     type: 3}
-  S100_Barkeep_Intro: {fileID: 0}
-  S100_Barkeep_Intro_After: {fileID: 0}
-  S103_Barkeep_DoneTask: {fileID: 0}
-  S104_Barkeep_ChoseEvilOffer: {fileID: 0}
-  S200_Handyman_Intro: {fileID: 0}
-  S201_Handyman_AskHelp: {fileID: 0}
-  S202_Handyman_FoundParts: {fileID: 0}
-  S203_Handyman_DoneTask: {fileID: 0}
-  S300_Mayor_Done: {fileID: 0}
+  S100_Barkeep_Intro: {fileID: 8821616941762462369, guid: ec5da016d1b9bca459919e832d841c09,
+    type: 3}
+  S100_Barkeep_Intro_After: {fileID: 8821616941762462369, guid: ce75b5f49b9c1df438349b965cd0d4be,
+    type: 3}
+  S103_Barkeep_DoneTask: {fileID: 8821616941762462369, guid: b766965ef87811c4ea8a59cf542fe06a,
+    type: 3}
+  S104_Barkeep_ChoseEvilOffer: {fileID: 8821616941762462369, guid: 469fb8d00a088a144a7e7e50965fb8b4,
+    type: 3}
+  S200_Handyman_Intro: {fileID: 8821616941762462369, guid: 957966312afea954186851df023f598d,
+    type: 3}
+  S201_Handyman_AskHelp: {fileID: 8821616941762462369, guid: 075e88273f34f2c4ea36c530f0acb74e,
+    type: 3}
+  S202_Handyman_FoundParts: {fileID: 8821616941762462369, guid: 60fb3c6916200d944897f18a77570624,
+    type: 3}
+  S203_Handyman_DoneTask: {fileID: 8821616941762462369, guid: 9150c687dfdaf3f47aaa318fac01e1b6,
+    type: 3}
+  S300_Mayor_Good: {fileID: 8821616941762462369, guid: 05dcbad2890f9d542b82db97490a63d7,
+    type: 3}
+  S300_Mayor_Evil: {fileID: 8821616941762462369, guid: 4a974ce2955478d41800057ae42c0690,
+    type: 3}

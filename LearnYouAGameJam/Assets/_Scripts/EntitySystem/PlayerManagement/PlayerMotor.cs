@@ -636,6 +636,12 @@ namespace LYGJ.EntitySystem.PlayerManagement {
                 AnimState = _IdleAnimID;
             }
         }
+
+        /// <summary> Gets or sets the position of the player. </summary>
+        public Vector3 Position {
+            get => _Rb.position;
+            set => _Rb.position = value;
+        }
     }
 
     [Flags]

@@ -60,6 +60,9 @@ namespace LYGJ.Common {
         /// <param name="Out"> The naming convention to convert the string to. </param>
         /// <returns> The converted string. </returns>
         public static string ConvertNamingConvention( this string S, NamingConvention In, NamingConvention Out ) {
+            if (string.IsNullOrEmpty(S)) {
+                return S;
+            }
             List<string> Words = new();
             switch (In) {
                 case NamingConvention.SnakeCase:
@@ -151,7 +154,7 @@ namespace LYGJ.Common {
         }
 
         /// <inheritdoc cref="ConvertNamingConvention(string,NamingConvention,NamingConvention)"/>
-        public static string ConvertNamingConvention( this string S, NamingConvention Out ) => ConvertNamingConvention(S, GetNamingConvention(S), Out);
+        public static string ConvertNamingConvention( this string S, NamingConvention Out ) => string.IsNullOrEmpty(S) ? string.Empty : ConvertNamingConvention(S, GetNamingConvention(S), Out);
 
     }
 

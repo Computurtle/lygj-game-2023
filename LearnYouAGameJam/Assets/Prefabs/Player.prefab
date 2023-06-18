@@ -300,6 +300,7 @@ GameObject:
   - component: {fileID: 1813280211023920302}
   - component: {fileID: 421512671116396360}
   - component: {fileID: 3649524392146133650}
+  - component: {fileID: 5210702537025708227}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -344,10 +345,10 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.25
-  m_Height: 1.1
+  m_Radius: 0.5
+  m_Height: 2
   m_Direction: 1
-  m_Center: {x: 0, y: 0.55, z: 0}
+  m_Center: {x: 0, y: 1, z: 0}
 --- !u!54 &1813280211023920274
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -389,6 +390,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _Renderers:
   - {fileID: 1813280211012374017}
+  _Motor: {fileID: 1813280211023920302}
 --- !u!114 &1813280211023920300
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -548,6 +550,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _DefaultEmotion: 1
+--- !u!208 &5210702537025708227
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1813280211023920303}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 0.5, y: 0.5, z: 0.5}
+  m_MoveThreshold: 0.1
+  m_Carve: 0
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0, y: 0, z: 0}
+  m_TimeToStationary: 0.5
 --- !u!1 &1813280211032281841
 GameObject:
   m_ObjectHideFlags: 0
@@ -721,7 +739,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3874491493458515341}
-  m_LocalRotation: {x: 0.12684143, y: 0.000000017067407, z: -0.000000002182482, w: 0.99192303}
+  m_LocalRotation: {x: 0.12684143, y: -0.000000017067407, z: 0.000000002182482, w: 0.99192303}
   m_LocalPosition: {x: 0, y: 0.69, z: -4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0

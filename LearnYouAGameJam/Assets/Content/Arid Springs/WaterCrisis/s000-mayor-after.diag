@@ -1,5 +1,6 @@
 mayor-layla: "There's two people I would consult if I were you." "Ezekial our resident repairman." "And of course trusty 'ol Barkeep Bael."
 
+:options
 > "Ezekial the Handyman" whos-ezekial
 > "Barkeep Bael" whos-bael
 > "That's all for now" done

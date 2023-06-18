@@ -14,10 +14,15 @@ namespace LYGJ.Content.AridSprings {
 
         public const string ID = "water-crisis";
 
+        internal const string
+            // ReSharper disable once InconsistentNaming
+            _Handyman = "ezekial-the-handyman";
+
         const string
-            _Mayor    = "mayor-layla",
-            _Barkeep  = "barkeep-bael",
-            _Handyman = "ezekial-the-handyman",
+            _Mayor   = "mayor-layla",
+            _Barkeep = "barkeep-bael",
+
+            _Well = Well.ID,
 
             _S000 = "speak-to-mayor",
             _S100 = "speak-to-barkeep",
@@ -45,7 +50,8 @@ namespace LYGJ.Content.AridSprings {
             S201_Handyman_AskHelp       = null!,
             S202_Handyman_FoundParts    = null!,
             S203_Handyman_DoneTask      = null!,
-            S300_Mayor_Done             = null!;
+            S300_Mayor_Good             = null!,
+            S300_Mayor_Evil             = null!;
 
         public enum Outcome {
             NotCompleted,
@@ -91,7 +97,13 @@ namespace LYGJ.Content.AridSprings {
                         StartStage(_S101, Token);
                     }
                 ));
-            // TODO: _S101 -- detect when player enters the grove
+            yield return (_S101, EnterTriggerZone(Grove.ID)
+                .Then(
+                    Token => {
+                        CompleteStage(_S101);
+                        StartStage(_S102, Token);
+                    }
+                ));
             // TODO: _S102 -- detect when player kills bandits
             yield return (_S103, TalkToNPC(_Barkeep, S103_Barkeep_DoneTask, Condition: C => C switch {
                     1 => (Action)(() => {
@@ -110,7 +122,26 @@ namespace LYGJ.Content.AridSprings {
                     }
                 ));
 
-            // TODO: _S200 -- detect when player finds the well (and talks to the handyman)
+            yield return (_S200, InteractWith(_Well)
+                .Then(
+                    async Token => {
+                        int Result;
+                        do {
+                            if (Token.IsCancellationRequested) {
+                                return;
+                            }
+                            Result = await S200_Handyman_Intro.Play();
+                        } while (Result != 0);
+                        NPCBase Handyman = NPCs.Get(_Handyman);
+                        Handyman.SetAmbientDialogue(S201_Handyman_AskHelp);
+                    }
+                )
+                .Then(
+                    Token => {
+                        CompleteStage(_S200);
+                        StartStage(_S201, Token);
+                    }
+                ));
             // TODO: _S201 -- detect when player finds the parts
             yield return (_S202, TalkToNPC(_Handyman, S202_Handyman_FoundParts, S203_Handyman_DoneTask)
                 .Then(
@@ -122,13 +153,22 @@ namespace LYGJ.Content.AridSprings {
                     }
                 ));
 
-            yield return (_S300, TalkToNPC(_Mayor, S300_Mayor_Done)
-                .Then(
-                    () => {
-                        CompleteStage(_S300);
-                        Complete();
-                    }
-                ));
+            yield return (_S300, async Token => {
+                NPCBase Mayor = NPCs.Get(_Mayor);
+                if (!Mayor.TryGetDialogueGiver(out NPCDialogueGiver? Giver)) {
+                    throw new InvalidOperationException("Mayor dialogue giver is indisposed.");
+                }
+
+                // ReSharper disable once SwitchExpressionHandlesSomeKnownEnumValuesWithExceptionInDefault
+                Giver.Dialogue = ThisSave_Outcome switch {
+                    Outcome.RepairedWell      => S300_Mayor_Good,
+                    Outcome.AcceptedEvilOffer => S300_Mayor_Evil,
+                    _                         => throw new ArgumentOutOfRangeException()
+                };
+                _ = await Giver.WaitForInteraction(true, Token);
+                CompleteStage(_S300);
+                Complete();
+            });
         }
 
         #endregion

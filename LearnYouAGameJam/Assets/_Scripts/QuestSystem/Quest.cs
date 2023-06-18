@@ -6,7 +6,10 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using LYGJ.Common;
 using LYGJ.DialogueSystem;
+using LYGJ.EntitySystem;
 using LYGJ.EntitySystem.NPCSystem;
+using LYGJ.Interactables;
+using LYGJ.SceneManagement;
 using OneOf;
 using Sirenix.OdinInspector;
 using UnityEngine;
@@ -39,9 +42,14 @@ namespace LYGJ.QuestSystem {
         bool IDMatchesName() => name == Key;
         #endif
 
-        protected readonly Dictionary<string, QuestStage> Stages = new();
+        [NonSerialized] protected readonly Dictionary<string, QuestStage> Stages = new();
 
-        protected bool Constructed;
+        [NonSerialized] protected bool Constructed;
+
+        [ExecuteOnReload] void Cleanup() {
+            Stages.Clear();
+            Constructed = false;
+        }
 
         /// <summary> Constructs the quest. </summary>
         public void Construct() {
@@ -129,10 +137,11 @@ namespace LYGJ.QuestSystem {
         }
 
         protected static QuestStage TalkToNPC( string Key, DialogueChain Chain, DialogueChain? After = null, Func<int, TalkToNPCCondition>? Condition = null ) {
-            static TalkToNPCCondition DefaultCondition( int Result ) => Result switch {
+            Debug.Assert(Chain != null, "No dialogue chain provided.");
+            TalkToNPCCondition DefaultCondition( int Result ) => Result switch {
                 0 => true,
                 1 => false, // Can't continue until user selects correct option.
-                _ => throw new($"Unexpected result {Result}."),
+                _ => throw new($"Unexpected result {Result} from dialogue chain {(Chain == null ? "<null>" : Chain.name)}.")
             };
             Condition ??= DefaultCondition;
 
@@ -142,8 +151,8 @@ namespace LYGJ.QuestSystem {
                     throw new($"NPC {Key} is already awaiting some other dialogue.");
                 }
 
-                Giver.Dialogue = Chain;
                 while (true) {
+                    Giver.Dialogue = Chain;
                     int Result = await Giver.WaitForInteraction(Cleanup: false, Token);
                     if (Condition is not null) {
                         TalkToNPCCondition ConditionResult = Condition(Result);
@@ -165,6 +174,38 @@ namespace LYGJ.QuestSystem {
                 } else {
                     Destroy(Giver);
                 }
+            }
+
+            return Perform;
+        }
+
+        protected enum InteractionTiming {
+            StartInteraction,
+            EndInteraction
+        }
+        protected static QuestStage InteractWith( string Key, InteractionTiming Timing = InteractionTiming.EndInteraction ) {
+            UniTask Perform( CancellationToken Token ) {
+                InteractableObjectBase Interactable = Objects.Get<InteractableObjectBase>(Key);
+                return Timing == InteractionTiming.StartInteraction
+                    ? Interactable.WaitForInteractionInitiation(Token)
+                    : Interactable.WaitForInteraction(Token);
+            }
+
+            return Perform;
+        }
+
+        protected static QuestStage EnterTriggerZone( string Key ) {
+            UniTask Perform( CancellationToken Token ) {
+                TriggerZone Zone = Objects.Get<TriggerZone>(Key);
+                return Zone.WaitForEntry(Token);
+            }
+
+            return Perform;
+        }
+        protected static QuestStage ExitTriggerZone( string Key ) {
+            UniTask Perform( CancellationToken Token ) {
+                TriggerZone Zone = Objects.Get<TriggerZone>(Key);
+                return Zone.WaitForExit(Token);
             }
 
             return Perform;

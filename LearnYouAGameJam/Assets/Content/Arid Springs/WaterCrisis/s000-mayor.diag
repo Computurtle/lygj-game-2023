@@ -8,16 +8,17 @@ mayor-layla: "Hrmm, well, there's two people I would consult if I were you." "Th
 > "Barkeep Bael" whos-bael
 
 :options
+mayor-layla: "Anything else?"
 > "Ezekial the Handyman" whos-ezekial
 > "Barkeep Bael" whos-bael
 > "That's all for now" done
 
 :whos-ezekial
-mayor-layla: "Now, I'm no expert, but Ezekiel - the old coot who mends things 'round here - he's been hoverin' near the well, lookin' more worried than a cat in a doghouse." "You might want to have a word with him." "Anything else?"
+mayor-layla: "Now, I'm no expert, but you might want to see Ezekiel." "Thats the old coot who mends things 'round here." "Lately, he's been hoverin' near the well, lookin' more worried than a cat in a doghouse." "Maybe have a word with him."
 goto options
 
 :whos-bael
-mayor-layla: "Ah of course Bael, the barkeep." "He's been selling his drinks at a high price." "Only water around and it's mixed with barley and hops." "Some folk are so desperate, they're drinkin' it." "Between you and me, it ain't good for them." "But who knows? Maybe he's open to reason." "You could try and talk with him." "Maybe he can... I don't know... help somehow?" "Anything else?"
+mayor-layla: "Ah of course Bael, the barkeep." "He's been selling his drinks at a high price." "Only water around and it's mixed with barley and hops." "Some folk are so desperate, they're drinkin' it." "Between you and me, it ain't good for them." "But who knows? Maybe he's open to reason." "You could try and talk with him." "Maybe he can... I don't know... help somehow?"
 goto options
 
 :done

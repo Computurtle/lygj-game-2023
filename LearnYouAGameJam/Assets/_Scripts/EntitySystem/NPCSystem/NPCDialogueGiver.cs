@@ -54,11 +54,7 @@ namespace LYGJ.EntitySystem.NPCSystem {
         /// <param name="Token"> The cancellation token to use. </param>
         /// <returns> The exit code of the dialogue chain. </returns>
         public async UniTask<int> WaitForInteraction( bool Cleanup, CancellationToken Token = default ) {
-            if (!Interactable || Dialogue == null) {
-                Debug.LogWarning("Cannot wait for interaction: NPC is not interactable or has no dialogue chain.");
-                return -1;
-            }
-
+            Debug.Assert(Dialogue != null, "Dialogue Giver has no dialogue chain assigned, yet WaitForInteraction was called.");
             if (_CTS != null) { throw new InvalidOperationException("Already waiting for interaction."); }
 
             _CTS = new();
