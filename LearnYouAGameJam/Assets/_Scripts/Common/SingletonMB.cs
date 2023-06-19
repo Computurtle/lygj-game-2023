@@ -49,6 +49,7 @@ namespace LYGJ.Common {
                 foreach (T Instance in FindObjectsOfType<T>()) {
                     Debug.LogWarning($"\tInstance: {Instance.name}.", Instance);
                 }
+                return;
             }
             #endif
             _Instance = (T)this;

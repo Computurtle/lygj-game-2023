@@ -18,7 +18,7 @@ namespace LYGJ.InventoryManagement {
         UnityEvent<ItemInstance> _OnItemAdded = new();
 
         /// <summary> Raised when an item is added to the inventory. </summary>
-        public static event UnityAction<ItemInstance> Added {
+        public static event UnityAction<ItemInstance>? Added {
             add => Instance._OnItemAdded.AddListener(value);
             remove => Instance._OnItemAdded.RemoveListener(value);
         }
@@ -27,7 +27,7 @@ namespace LYGJ.InventoryManagement {
         UnityEvent<ItemInstance> _OnItemRemoved = new();
 
         /// <summary> Raised when an item is removed from the inventory. </summary>
-        public static event UnityAction<ItemInstance> Removed {
+        public static event UnityAction<ItemInstance>? Removed {
             add => Instance._OnItemRemoved.AddListener(value);
             remove => Instance._OnItemRemoved.RemoveListener(value);
         }
@@ -36,9 +36,30 @@ namespace LYGJ.InventoryManagement {
         UnityEvent _OnInventoryCleared = new();
 
         /// <summary> Raised when the inventory is cleared. </summary>
-        public static event UnityAction Cleared {
+        public static event UnityAction? Cleared {
             add => Instance._OnInventoryCleared.AddListener(value);
             remove => Instance._OnInventoryCleared.RemoveListener(value);
+        }
+
+        public enum ChangeType {
+            Add,
+            Remove,
+            Clear
+        }
+
+        public delegate void InventoryChanged( ChangeType ChangeType, ItemInstance ItemInstance );
+
+        /// <summary> Raised when the inventory is changed. </summary>
+        public static event InventoryChanged? Changed;
+
+        protected override void Awake() {
+            base.Awake();
+            void OnItemAdded( ItemInstance   ItemInstance ) => Changed?.Invoke(ChangeType.Add, ItemInstance);
+            void OnItemRemoved( ItemInstance ItemInstance ) => Changed?.Invoke(ChangeType.Remove, ItemInstance);
+            void OnInventoryCleared()                       => Changed?.Invoke(ChangeType.Clear, ItemInstance.Empty);
+            Added    += OnItemAdded;
+            Removed  += OnItemRemoved;
+            Cleared  += OnInventoryCleared;
         }
 
         /// <summary> Adds the specified item to the inventory. </summary>
@@ -250,6 +271,28 @@ namespace LYGJ.InventoryManagement {
             void OnItemChanged( ItemInstance Changed ) {
                 if (Contains(Recipe)) {
                     Source.TrySetResult();
+                }
+            }
+        }
+
+        /// <summary> Gets all items of the given type. </summary>
+        /// <param name="Type"> The type of items to get. </param>
+        /// <returns> All items of the given type. </returns>
+        public static IEnumerable<ItemInstance> OfType( ItemType Type ) {
+            foreach (KeyValuePair<Item, uint> Pair in Instance._Inventory) {
+                if (Pair.Key.Type == Type) {
+                    yield return Pair;
+                }
+            }
+        }
+
+        /// <summary> Gets all items of the given group. </summary>
+        /// <param name="Group"> The group of items to get. </param>
+        /// <returns> All items of the given group. </returns>
+        public static IEnumerable<ItemInstance> OfGroup( ItemGroup Group ) {
+            foreach (KeyValuePair<Item, uint> Pair in Instance._Inventory) {
+                if (Pair.Key.Group == Group) {
+                    yield return Pair;
                 }
             }
         }

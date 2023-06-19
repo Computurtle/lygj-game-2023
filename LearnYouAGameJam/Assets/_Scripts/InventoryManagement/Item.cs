@@ -9,13 +9,28 @@ namespace LYGJ.InventoryManagement {
     [CreateAssetMenu(fileName = "New Item", menuName = "LYGJ/Inventory/Item")]
     public sealed class Item : ScriptableObject, IEquatable<Item>, IComparable<Item>, IComparable {
         /// <summary> The item ID. </summary>
-        [field: SerializeField, Tooltip("The item ID.")] public string ID { get; private set; } = string.Empty;
+        [field: SerializeField, Tooltip("The item ID.")]
+        public string ID { get; private set; } = string.Empty;
 
         /// <summary> The item name. </summary>
-        [field: SerializeField, Tooltip("The item name.")] public string Name { get; private set; } = string.Empty;
+        [field: SerializeField, Tooltip("The item name.")]
+        public string Name { get; private set; } = string.Empty;
 
         /// <summary> The item description. </summary>
-        [field: SerializeField, Multiline, Tooltip("The item description.")] public string Description { get; private set; } = string.Empty;
+        [field: SerializeField, Multiline, Tooltip("The item description.")]
+        public string Description { get; private set; } = string.Empty;
+
+        /// <summary> The item type. </summary>
+        [field: SerializeField, Tooltip("The item type."), HorizontalGroup("Type")]
+        public ItemType Type { get; private set; }
+
+        /// <summary> The item group. </summary>
+        [ShowInInspector, ReadOnly, Tooltip("The item group."), HorizontalGroup("Type")]
+        public ItemGroup Group => Type.GetAttribute<ItemType, ItemGroupAttribute>().Group;
+
+        /// <summary> The item icon. </summary>
+        [field: SerializeField, Tooltip("The item icon.")]
+        public Sprite? Icon { get; private set; } = null;
 
         #if UNITY_EDITOR
         void Reset() {

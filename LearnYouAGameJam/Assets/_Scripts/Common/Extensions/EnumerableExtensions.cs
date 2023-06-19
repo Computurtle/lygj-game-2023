@@ -208,5 +208,17 @@ namespace LYGJ.Common {
         /// <typeparam name="T"> The type of the items in the enumerable. </typeparam>
         [LinqTunnel]
         public static IReadOnlyList<T> Iterate<T>( this IEnumerable<T> Enumerable ) => EnumerableExtensionsTyped<T>.Iterate(Enumerable);
+
+        /// <inheritdoc cref="Enumerable.ToList{TSource}"/>
+        /// <param name="Source"> The source enumerator. </param>
+        /// <returns> The items in the enumerator as a list. </returns>
+        public static List<T> ToList<T>( this IEnumerator<T> Source ) {
+            List<T> Result = new();
+            while (Source.MoveNext()) {
+                Result.Add(Source.Current);
+            }
+
+            return Result;
+        }
     }
 }
