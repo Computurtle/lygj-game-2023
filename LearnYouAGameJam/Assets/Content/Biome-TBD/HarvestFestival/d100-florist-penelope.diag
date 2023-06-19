@@ -1,0 +1,17 @@
+# Dialogue for Florist Penelope Quest 2
+
+florist-penelope: "Hey there, traveller! Care for some bloomin' flowers to brighten up your day? These rare Twilight Blossoms are oh so beautiful, however poisonous."
+
+> "No, sorry" choice-deny-flowers
+> "Yes, thank you" choice-accept-flowers
+
+:choice-deny-flowers
+player: "I would love to, but I am just here to help Eliza with her field, thank you for the offer though."
+goto penelope-goodbye
+
+:choice-accept-flowers
+player: "Thank you, that's very kind of you. This may come in handy for future adventures. Anyway, I'm off to help Eliza with her field."
+$additem twilight-blossom 1
+
+:penelope-goodbye
+florist-penelope: "Oh that’s wonderful, well, no time to dilly-dally then, you best be off."

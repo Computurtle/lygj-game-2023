@@ -1,0 +1,15 @@
+# Dialogue for Mayor Pippins Quest 2
+
+mayor-pippins: "Greetings, esteemed hero! Oh, how delightful it is to have you grace our whimsical town! Pray tell, have you ventured here to lend a hand with our splendid harvest festival?"
+
+> "Harvest Festival?" choice-harvest-festival
+
+:choice-harvest-festival
+player: "What is the harvets festival?"
+mayor-pippins: "Ah, the harvest festival! A time of merriment and bountiful growth, ensuring we have enough sustenance to dance through the winter's chill. Would you be willing to join us in this jolly endeavour?"
+
+> "Of course!" choice-yes
+
+:choice-yes
+player: "Why of course, I would love to help, how can I get started?"
+mayor-pippins: "Huzzah! Your benevolence knows no bounds! Head to the field nestled towards the back of our charming village, where our esteemed farmer, Eliza Greenfield, eagerly awaits your arrival. Together, we shall sow the seeds of joy!"
