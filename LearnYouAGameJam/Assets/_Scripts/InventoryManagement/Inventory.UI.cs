@@ -102,6 +102,8 @@ namespace LYGJ {
 
         void Repaint_Paging() {
             int Total = TotalPages;
+            _CurrentPage = Mathf.Min(Total - 1, _CurrentPage + 1); // Re-clamp to ensure we're not on an invalid page (i.e. if an item was just removed)
+
             _PageNumber.text = string.Format(_PageNumberFormat, _CurrentPage + 1, Total == 0 ? 1 : Total);
         }
 
@@ -361,9 +363,9 @@ namespace LYGJ {
 
             _RepaintQueued = false;
 
-            Repaint_Slots();
             Repaint_Paging();
             Repaint_Groups();
+            Repaint_Slots();
             Repaint_Preview();
         }
     }
