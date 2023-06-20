@@ -44,11 +44,45 @@ namespace LYGJ.InventoryManagement {
         /// <summary> Sets the item to be displayed. </summary>
         /// <param name="Inventory_UI"> The inventory UI that owns this item preview. </param>
         /// <param name="Item"> The item to set. </param>
-        public virtual void SetItem( Inventory_UI Inventory_UI, ItemInstance Item ) => DisplayItemInternal(Item);
+        public virtual void SetItem( Inventory_UI Inventory_UI, ItemInstance Item ) {
+            if (Item.IsNone) {
+                DisplayNoneItemInternal(Item);
+            }else {
+                DisplayItemInternal(Item);
+            }
+        }
+
+        protected void DisplayNoneItemInternal( ItemInstance Item ) {
+            this.Item = Item;
+            if (_Icon != null) {
+                _Icon.enabled = false;
+            }
+
+            if (_Name != null) {
+                _Name.text = string.Empty;
+            }
+
+            if (_Quantity != null) {
+                _Quantity.text = string.Empty;
+            }
+
+            if (_Description != null) {
+                _Description.text = string.Empty;
+            }
+
+            if (_ItemType != null) {
+                _ItemType.text = string.Empty;
+            }
+
+            if (_ItemGroup != null) {
+                _ItemGroup.text = string.Empty;
+            }
+        }
 
         protected void DisplayItemInternal( ItemInstance Item ) {
             this.Item = Item;
             if (_Icon != null) {
+                _Icon.enabled        = true;
                 _Icon.overrideSprite = Item.Item.Icon!;
             }
 

@@ -59,6 +59,16 @@ namespace LYGJ {
                 Items = Items.Skip(_CurrentPage * _SlotsPerPage).Take(_SlotsPerPage);
             }
 
+            if (_PrefillEmptySlots) {
+                List<ItemInstance> Iterated = Items.ToList();
+
+                int EmptySlots = _SlotsPerPage - Iterated.Count;
+                if (EmptySlots > 0) {
+                    Iterated.AddRange(Enumerable.Repeat(ItemInstance.Empty, EmptySlots));
+                }
+                Items = Iterated;
+            }
+
             foreach (ItemInstance Item in Items) {
                 Inventory_Slot Slot = Pool<Inventory_Slot>.Get(_SlotParent, _SlotPrefab);
                 Slot.SetItem(this, Item);
@@ -76,6 +86,8 @@ namespace LYGJ {
         bool _Paginate = true;
         [SerializeField, Tooltip("The max number of slots per page."), Min(1), ShowIf(nameof(_Paginate))]
         int _SlotsPerPage = 20;
+        [SerializeField, Tooltip("Whether to prefill available slots with empty slots."), ShowIf(nameof(_Paginate))]
+        bool _PrefillEmptySlots = true;
         [SerializeField, Tooltip("The page left button."), Required, ChildGameObjectsOnly, ShowIf(nameof(_Paginate))]
         Button _PageLeft = null!;
         [SerializeField, Tooltip("The page right button."), Required, ChildGameObjectsOnly, ShowIf(nameof(_Paginate))]

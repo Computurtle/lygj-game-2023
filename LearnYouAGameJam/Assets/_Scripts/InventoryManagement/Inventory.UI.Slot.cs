@@ -23,8 +23,10 @@ namespace LYGJ {
         public override void SetItem( Inventory_UI Inventory_UI, ItemInstance Item ) {
             base.SetItem(Inventory_UI, Item);
             _Button.onClick.RemoveAllListeners();
-            void Call() => Inventory_UI.ShowPreview(Item);
-            _Button.onClick.AddListener(Call);
+            if (!Item.IsNone) {
+                void Call() => Inventory_UI.ShowPreview(Item);
+                _Button.onClick.AddListener(Call);
+            }
         }
 
         #endregion

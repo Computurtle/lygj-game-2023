@@ -10,11 +10,23 @@ namespace LYGJ.InventoryManagement {
     public sealed class Item : ScriptableObject, IEquatable<Item>, IComparable<Item>, IComparable {
         /// <summary> The item ID. </summary>
         [field: SerializeField, Tooltip("The item ID.")]
-        public string ID { get; private set; } = string.Empty;
+        public string ID {
+            get;
+            #if !UNITY_EDITOR
+            private
+            #endif
+            set;
+        } = string.Empty;
 
         /// <summary> The item name. </summary>
         [field: SerializeField, Tooltip("The item name.")]
-        public string Name { get; private set; } = string.Empty;
+        public string Name {
+            get;
+            #if !UNITY_EDITOR
+            private
+            #endif
+            set;
+        } = string.Empty;
 
         /// <summary> The item description. </summary>
         [field: SerializeField, Multiline, Tooltip("The item description.")]
@@ -30,7 +42,13 @@ namespace LYGJ.InventoryManagement {
 
         /// <summary> The item icon. </summary>
         [field: SerializeField, Tooltip("The item icon.")]
-        public Sprite? Icon { get; private set; } = null;
+        public Sprite? Icon {
+            get;
+            #if !UNITY_EDITOR
+            private
+            #endif
+            set;
+        } = null;
 
         #if UNITY_EDITOR
         void Reset() {
@@ -124,6 +142,9 @@ namespace LYGJ.InventoryManagement {
         [ShowInInspector, HorizontalGroup, LabelText("x"), LabelWidth(20f)]
         public readonly uint Amount;
 
+        /// <summary> Whether this is a 'none' item. </summary>
+        public readonly bool IsNone;
+
         /// <summary> The item name. </summary>
         /// <param name="Item"> The item. </param>
         /// <param name="Amount"> The item amount. </param>
@@ -131,13 +152,14 @@ namespace LYGJ.InventoryManagement {
         /// <exception cref="ArgumentOutOfRangeException"> Thrown if <paramref name="Amount"/> is zero. </exception>
         public ItemInstance( Item Item, in uint Amount = 1u ) : this(Item, Amount, false) { }
 
-        ItemInstance( Item Item, in uint Amount, bool BypassChecks ) {
-            if (!BypassChecks) {
+        ItemInstance( Item Item, in uint Amount, bool IsNone ) {
+            if (!IsNone) {
                 if (Item   == null) { throw new ArgumentNullException(nameof(Item), "Item cannot be null."); }
                 if (Amount == 0u) { throw new ArgumentOutOfRangeException(nameof(Amount), Amount, "Amount must be greater than zero."); }
             }
             this.Item   = Item;
             this.Amount = Amount;
+            this.IsNone = IsNone;
         }
 
         /// <summary> An empty item instance. </summary>
