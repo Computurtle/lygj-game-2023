@@ -183,6 +183,43 @@ namespace LYGJ.Common {
             return true;
         }
 
+        /// <summary> Attempts to get the count of the given collection without enumerating it. </summary>
+        /// <typeparam name="T"> The type of the items in the collection. </typeparam>
+        /// <param name="Collection"> The collection to get the count of. </param>
+        /// <param name="Count"> The count of the collection, or -1 if the count could not be determined. </param>
+        /// <returns> <see langword="true"/> if the count could be determined, otherwise <see langword="false"/>. </returns>
+        public static bool TryGetNonEnumeratedCount<T>( [NoEnumeration] this IEnumerable<T> Collection, out int Count ) {
+            switch (Collection) {
+                case ICollection<T> Coll:
+                    Count = Coll.Count;
+                    return true;
+                case IReadOnlyCollection<T> ReadOnlyColl:
+                    Count = ReadOnlyColl.Count;
+                    return true;
+                case ICollection CollWeak:
+                    Count = CollWeak.Count;
+                    return true;
+                default:
+                    Count = -1;
+                    return false;
+            }
+        }
+
+        /// <inheritdoc cref="TryGetNonEnumeratedCount{T}(System.Collections.Generic.IEnumerable{T},out int)"/>
+        public static bool TryGetNonEnumeratedCount( [NoEnumeration] this IEnumerable Collection, out int Count ) {
+            switch (Collection) {
+                case ICollection Coll:
+                    Count = Coll.Count;
+                    return true;
+                case IReadOnlyCollection<object?> ReadOnlyColl:
+                    Count = ReadOnlyColl.Count;
+                    return true;
+                default:
+                    Count = -1;
+                    return false;
+            }
+        }
+
         static class EnumerableExtensionsTyped<T> {
             [ThreadStatic] static List<T>? _Iterated;
 
@@ -192,7 +229,11 @@ namespace LYGJ.Common {
             [LinqTunnel]
             public static IReadOnlyList<T> Iterate( IEnumerable<T> Enumerable ) {
                 if (_Iterated is null) {
-                    _Iterated = new();
+                    if (Enumerable.TryGetNonEnumeratedCount(out int Count)) {
+                        _Iterated = new(Count);
+                    } else {
+                        _Iterated = new();
+                    }
                 } else {
                     _Iterated.Clear();
                 }
@@ -219,6 +260,46 @@ namespace LYGJ.Common {
             }
 
             return Result;
+        }
+
+        /// <summary> Gets an iterated version of the enumerable, only casting to <see cref="IReadOnlyCollection{T}"/> if necessary. </summary>
+        /// <typeparam name="T"> The type of the items in the enumerable. </typeparam>
+        /// <param name="Enumerable"> The enumerable to get the iterated version of. </param>
+        /// <returns> The iterated version of the enumerable. </returns>
+        public static IReadOnlyCollection<T> AsReadOnlyCollection<T>( this IEnumerable<T> Enumerable ) {
+            if (Enumerable is IReadOnlyCollection<T> Collection) {
+                return Collection;
+            }
+
+            if (Enumerable.TryGetNonEnumeratedCount(out int Count)) {
+                T[] Array = new T[Count];
+                int Index = 0;
+                foreach (T Item in Enumerable) {
+                    Array[Index++] = Item;
+                }
+                return Array;
+            }
+            return Enumerable.Iterate();
+        }
+
+        /// <summary> Gets an iterated version of the enumerable, only casting to <see cref="IReadOnlyList{T}"/> if necessary. </summary>
+        /// <typeparam name="T"> The type of the items in the enumerable. </typeparam>
+        /// <param name="Enumerable"> The enumerable to get the iterated version of. </param>
+        /// <returns> The iterated version of the enumerable. </returns>
+        public static IReadOnlyList<T> AsReadOnlyList<T>( this IEnumerable<T> Enumerable ) {
+            if (Enumerable is IReadOnlyList<T> List) {
+                return List;
+            }
+
+            if (Enumerable.TryGetNonEnumeratedCount(out int Count)) {
+                T[] Array = new T[Count];
+                int Index = 0;
+                foreach (T Item in Enumerable) {
+                    Array[Index++] = Item;
+                }
+                return Array;
+            }
+            return Enumerable.Iterate();
         }
     }
 }

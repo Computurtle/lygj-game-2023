@@ -131,6 +131,15 @@ namespace LYGJ {
         [SerializeField, Tooltip("The icons for each item group."), Required, AssetsOnly]
         EnumDictionary<ItemGroup, Sprite> _GroupIcons = new(null!);
 
+        [Space]
+        [SerializeField, Tooltip("Whether to limit the amount of shown groups at a given time."), ToggleLeft]
+        bool _LimitGroups = true;
+        [SerializeField, Tooltip("The max number of groups to show at a given time (excluding 'All')."), Min(1), ShowIf(nameof(_LimitGroups))]
+        int _ShownGroups = 5;
+        // Will be centred around the current group (i.e. if max is 5, and current is 3, then 1, 2, [3], 4, 5 will be shown)
+        // If there are less than the max, then all will be shown
+        // Also, say there is a max of 5, the current is 6, and there are 7 groups, then 3, 4, 5, [6], 7 will be shown (not centred)
+
         /// <summary> Gets the icon for the given group. </summary>
         /// <param name="Group"> The group to get the icon for, or <see langword="null"/> for the all group. </param>
         /// <returns> The icon for the given group. </returns>
@@ -175,13 +184,39 @@ namespace LYGJ {
             return Enum<ItemGroup>.Values.Where(Group => Inventory.OfGroup(Group).Any());
         }
 
+        IEnumerable<ItemGroup> GetVisibleGroups() {
+            if (_LimitGroups) {
+                IReadOnlyCollection<ItemGroup> Groups = GetGroups().AsReadOnlyCollection();
+
+                // Old Algorithm:
+                // int Max   = Mathf.Min(_ShownGroups, Groups.Count);
+                // int Start = Mathf.Max(0, _CurrentGroup.GetIndex(_NavigationIncludesAllGroup) - Max / 2);
+                // return Groups.Skip(Start).Take(Max);
+
+                // This is close to what we want, but it doesn't handle the case where the current group is near the end of the list.
+                // The new algorithm first checks the remaining space at the end of the sequence, and if there is not enough groups to show after our current, it will show more at the start.
+                int Max   = Mathf.Min(_ShownGroups, Groups.Count);
+                int Start = Mathf.Max(0, _CurrentGroup.GetIndex(_NavigationIncludesAllGroup) - Max / 2);
+                int End   = Mathf.Min(Groups.Count, Start + Max);
+                int Left  = Max - (End - Start);
+
+                if (Left > 0) {
+                    Start = Mathf.Max(0, Start - Left);
+                }
+
+                return Groups.Skip(Start).Take(Max);
+            }
+
+            return GetGroups();
+        }
+
         void SpawnGroupButtons() {
             Pool<Inventory_Group>.ReturnAll(_GroupParent);
 
             Inventory_Group All = Pool<Inventory_Group>.Get(_GroupParent, _GroupPrefab);
             All.SetAll(this);
 
-            foreach (ItemGroup Group in GetGroups()) {
+            foreach (ItemGroup Group in GetVisibleGroups()) {
                 Inventory_Group NewGroup = Pool<Inventory_Group>.Get(_GroupParent, _GroupPrefab);
                 NewGroup.SetGroup(this, Group);
             }
@@ -409,6 +444,24 @@ namespace LYGJ {
             }
 
             return Enum<ItemGroup>.Last;
+        }
+
+        /// <summary> Gets the index of the group in the sequence. </summary>
+        /// <param name="IncludeNone"> Whether to include the 'None' value in the sequence. </param>
+        /// <returns> The index of the group in the sequence. </returns>
+        public int GetIndex( bool IncludeNone ) {
+            if (TryPickT0(out ItemGroup Group)) {
+                if (IncludeNone) {
+                    ItemGroup Previous = Group.Previous(Loop: false);
+                    if (Previous == Group) { // If we fail to get the previous, that means we're at the start of the sequence.
+                        return 0;
+                    }
+                }
+
+                return Group.IndexOf();
+            }
+
+            return Enum<ItemGroup>.Count - 1;
         }
 
         public static implicit operator ItemGroupOrNone( ItemGroup Group ) => new(Group);

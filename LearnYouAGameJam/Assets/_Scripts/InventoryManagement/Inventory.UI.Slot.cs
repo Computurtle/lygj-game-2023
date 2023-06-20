@@ -6,6 +6,7 @@ using UnityEngine.UI;
 
 namespace LYGJ {
     public sealed class Inventory_Slot : Inventory_ItemPreview {
+        [Title("Interaction")]
         [SerializeField, Tooltip("The button component."), Required, ChildGameObjectsOnly]
         Button _Button = null!;
 

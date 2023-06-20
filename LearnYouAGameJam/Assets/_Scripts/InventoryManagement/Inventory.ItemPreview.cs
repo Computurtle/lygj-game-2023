@@ -44,23 +44,30 @@ namespace LYGJ.InventoryManagement {
         /// <summary> Sets the item to be displayed. </summary>
         /// <param name="Inventory_UI"> The inventory UI that owns this item preview. </param>
         /// <param name="Item"> The item to set. </param>
-        public virtual void SetItem( Inventory_UI Inventory_UI, ItemInstance Item ) {
+        public virtual void SetItem( Inventory_UI Inventory_UI, ItemInstance Item ) => DisplayItemInternal(Item);
+
+        protected void DisplayItemInternal( ItemInstance Item ) {
             this.Item = Item;
             if (_Icon != null) {
                 _Icon.overrideSprite = Item.Item.Icon!;
             }
+
             if (_Name != null) {
                 _Name.text = string.Format(_NameFormat, Item.Item.Name, Item.Amount);
             }
+
             if (_Quantity != null) {
                 _Quantity.text = string.Format(_QuantityFormat, Item.Amount);
             }
+
             if (_Description != null) {
                 _Description.text = string.Format(_DescriptionFormat, Item.Item.Description);
             }
+
             if (_ItemType != null) {
                 _ItemType.text = string.Format(_ItemTypeFormat, Item.Item.Type, Item.Item.Group);
             }
+
             if (_ItemGroup != null) {
                 _ItemGroup.text = string.Format(_ItemGroupFormat, Item.Item.Group);
             }
