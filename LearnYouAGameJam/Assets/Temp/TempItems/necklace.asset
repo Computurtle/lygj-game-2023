@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 578a33e064824f9a8c512f8a9c05bacc, type: 3}
-  m_Name: bag 1
+  m_Name: necklace
   m_EditorClassIdentifier: 
-  <ID>k__BackingField: bag
-  <Name>k__BackingField: Bag
+  <ID>k__BackingField: necklace
+  <Name>k__BackingField: Necklace
   <Description>k__BackingField: 
-  <Type>k__BackingField: 0
-  <Icon>k__BackingField: {fileID: 21300000, guid: 4037375dc7463d247863804ab62845a7,
+  <Type>k__BackingField: 8
+  <Icon>k__BackingField: {fileID: 21300000, guid: a6b05684a54a8254ea80122c8f00601d,
     type: 3}

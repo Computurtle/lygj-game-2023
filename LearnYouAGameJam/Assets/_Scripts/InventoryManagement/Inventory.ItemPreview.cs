@@ -22,6 +22,8 @@ namespace LYGJ.InventoryManagement {
         TMP_Text? _Quantity = null;
         [SerializeField, Tooltip("The format string for the quantity.\n\n{0} = Quantity"), LabelText("Format"), HideIf("@" + nameof(_Quantity) + " == null")]
         string _QuantityFormat = "x{0:N0}";
+        [SerializeField, Tooltip("Whether to hide the quantity if it is 1."), HideIf("@" + nameof(_Quantity) + " == null")]
+        bool _HideQuantityIfOne = true;
 
         [Space]
         [SerializeField, Tooltip("The TMP_Text component for the description."), ChildGameObjectsOnly]
@@ -42,9 +44,8 @@ namespace LYGJ.InventoryManagement {
         string _ItemGroupFormat = "{0}";
 
         /// <summary> Sets the item to be displayed. </summary>
-        /// <param name="Inventory_UI"> The inventory UI that owns this item preview. </param>
         /// <param name="Item"> The item to set. </param>
-        public virtual void SetItem( Inventory_UI Inventory_UI, ItemInstance Item ) {
+        public void SetItem( ItemInstance Item ) {
             if (Item.IsNone) {
                 DisplayNoneItemInternal(Item);
             }else {
@@ -91,7 +92,8 @@ namespace LYGJ.InventoryManagement {
             }
 
             if (_Quantity != null) {
-                _Quantity.text = string.Format(_QuantityFormat, Item.Amount);
+                _Quantity.text    = string.Format(_QuantityFormat, Item.Amount);
+                _Quantity.enabled = !_HideQuantityIfOne || Item.Amount != 1;
             }
 
             if (_Description != null) {

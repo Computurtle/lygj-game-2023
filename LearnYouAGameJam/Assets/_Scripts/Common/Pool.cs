@@ -1,7 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
+using Object = UnityEngine.Object;
 
 namespace LYGJ.Common {
     public static class Pool<T> where T : Component {
@@ -14,6 +17,9 @@ namespace LYGJ.Common {
         /// <param name="New"> [out] Whether a new item was created. </param>
         /// <returns> The pooled item. </returns>
         public static T Get( Transform Parent, T Prefab, out bool New ) {
+            if (Parent == null) { throw new InvalidOperationException("No parent provided."); }
+            if (Prefab == null) { throw new InvalidOperationException("No prefab provided."); }
+
             New = false;
             foreach (T Child in Parent.GetComponentsInChildren<T>(includeInactive: true)) {
                 if (Child.gameObject.activeSelf) { continue; }
@@ -40,6 +46,7 @@ namespace LYGJ.Common {
         /// <param name="IncludeActive"> Whether to include active items. </param>
         /// <returns> <see langword="true"/> if a pooled item was found, <see langword="false"/> otherwise. </returns>
         public static bool TryGet( Transform Parent, [MaybeNullWhen(false)] out T Item, bool IncludeActive = false ) {
+            if (Parent == null) { Debug.LogError("Parent cannot be null."); Item = null; return false; }
             foreach (T Child in Parent.GetComponentsInChildren<T>(includeInactive: true)) {
                 if (!IncludeActive && Child.gameObject.activeSelf) { continue; }
                 Item = Child;
@@ -55,6 +62,7 @@ namespace LYGJ.Common {
         /// <param name="IncludeUsed"> Whether to include used items. </param>
         /// <returns> The pooled items. </returns>
         public static IEnumerable<T> GetAll( Transform Parent, bool IncludeUsed = false ) {
+            if (Parent == null) { Debug.LogError("Parent cannot be null."); yield break; }
             foreach (T Child in Parent.GetComponentsInChildren<T>(includeInactive: !IncludeUsed)) {
                 if (!IncludeUsed && Child.gameObject.activeSelf) { continue; }
                 yield return Child;
@@ -65,6 +73,7 @@ namespace LYGJ.Common {
         /// <param name="Parent"> The parent of the items. </param>
         /// <returns> The number of items returned. </returns>
         public static int ReturnAll( Transform Parent ) {
+            if (Parent == null) { Debug.LogError("Parent cannot be null."); return 0; }
             int Returned = 0;
             foreach (T Child in Parent.GetComponentsInChildren<T>(includeInactive: true)) {
                 Child.gameObject.SetActive(false);
@@ -76,6 +85,7 @@ namespace LYGJ.Common {
         /// <summary> Returns the specified item to the pool. </summary>
         /// <param name="Item"> The item to return. </param>
         public static void Return( T Item ) {
+            if (Item == null) { Debug.LogError("Cannot return a null item."); return; }
             Item.gameObject.SetActive(false);
         }
 
@@ -83,6 +93,7 @@ namespace LYGJ.Common {
         /// <remarks> This destroys all pooled items. As such it is not recommended, as it defeats the purpose of pooling. </remarks>
         /// <param name="Parent"> The parent of the items. </param>
         public static void Purge( Transform Parent ) {
+            if (Parent == null) { Debug.LogError("Parent cannot be null."); return; }
             foreach (T Child in Parent.GetComponentsInChildren<T>(includeInactive: true)) {
                 Object.Destroy(Child.gameObject);
             }
@@ -92,6 +103,7 @@ namespace LYGJ.Common {
         /// <param name="Parent"> The parent of the items. </param>
         /// <returns> The active items. </returns>
         public static IEnumerable<T> Active( Transform Parent ) {
+            if (Parent == null) { Debug.LogError("Parent cannot be null."); yield break; }
             foreach (T Child in Parent.GetComponentsInChildren<T>(includeInactive: true)) {
                 if (Child.gameObject.activeSelf) { yield return Child; }
             }
@@ -101,6 +113,7 @@ namespace LYGJ.Common {
         /// <param name="Parent"> The parent of the items. </param>
         /// <returns> The inactive items. </returns>
         public static IEnumerable<T> Inactive( Transform Parent ) {
+            if (Parent == null) { Debug.LogError("Parent cannot be null."); yield break; }
             foreach (T Child in Parent.GetComponentsInChildren<T>(includeInactive: true)) {
                 if (!Child.gameObject.activeSelf) { yield return Child; }
             }
@@ -110,6 +123,7 @@ namespace LYGJ.Common {
         /// <param name="Parent"> The parent of the items. </param>
         /// <returns> The number of active items. </returns>
         public static int ActiveCount( Transform Parent ) {
+            if (Parent == null) { Debug.LogError("Parent cannot be null."); return 0; }
             int Count = 0;
             foreach (T Child in Parent.GetComponentsInChildren<T>(includeInactive: true)) {
                 if (Child.gameObject.activeSelf) { Count++; }
@@ -132,8 +146,8 @@ namespace LYGJ.Common {
         /// <inheritdoc cref="Pool{T}.Get(Transform,T,out bool)"/>
         public static T Get<T>( T Prefab, Transform Parent ) where T : Component => Pool<T>.Get(Parent, Prefab, out _);
 
-        /// <inheritdoc cref="Pool{T}.TryGet(Transform,out T)"/>
-        public static bool TryGet<T>( Transform Parent, [MaybeNullWhen(false)] out T Item ) where T : Component => Pool<T>.TryGet(Parent, out Item);
+        /// <inheritdoc cref="Pool{T}.TryGet(Transform,out T,bool)"/>
+        public static bool TryGet<T>( Transform Parent, [MaybeNullWhen(false)] out T Item, bool IncludeActive = false ) where T : Component => Pool<T>.TryGet(Parent, out Item, IncludeActive);
 
         /// <inheritdoc cref="Pool{T}.ReturnAll(Transform)"/>
         public static void ReturnAll<T>( Transform Parent ) where T : Component => Pool<T>.ReturnAll(Parent);

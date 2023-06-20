@@ -15,6 +15,6 @@ MonoBehaviour:
   <ID>k__BackingField: green-circle-potion
   <Name>k__BackingField: Green Circle Potion
   <Description>k__BackingField: 
-  <Type>k__BackingField: 0
+  <Type>k__BackingField: 10
   <Icon>k__BackingField: {fileID: 21300000, guid: eda53e894903c2148836dc359ce5d723,
     type: 3}

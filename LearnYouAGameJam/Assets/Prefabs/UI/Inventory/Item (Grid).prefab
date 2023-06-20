@@ -217,6 +217,7 @@ MonoBehaviour:
   _NameFormat: '{0}'
   _Quantity: {fileID: 5098549369238936907}
   _QuantityFormat: x{0:N0}
+  _HideQuantityIfOne: 0
   _Description: {fileID: 0}
   _DescriptionFormat: '{0}'
   _ItemType: {fileID: 0}

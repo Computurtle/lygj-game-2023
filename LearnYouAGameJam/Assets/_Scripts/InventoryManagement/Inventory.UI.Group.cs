@@ -26,19 +26,19 @@ namespace LYGJ {
         public bool Selected { get; private set; }
 
         /// <summary> Sets the group to be all items. </summary>
-        /// <param name="Inventory_UI"> The inventory UI that owns this group button. </param>
-        public void SetAll( Inventory_UI Inventory_UI ) => Setup(Inventory_UI, ItemGroupOrNone.None);
+        /// <param name="Container_UI"> The inventory UI that owns this group button. </param>
+        public void SetAll<TSelf>( Container_UI<TSelf> Container_UI ) where TSelf : Container_UI<TSelf> => Setup(Container_UI, ItemGroupOrNone.None);
 
         /// <summary> Sets the group to be the given group. </summary>
-        /// <param name="Inventory_UI"> The inventory UI that owns this group button. </param>
+        /// <param name="Container_UI"> The inventory UI that owns this group button. </param>
         /// <param name="Group"> The group to set. </param>
-        public void SetGroup( Inventory_UI Inventory_UI, ItemGroup Group ) => Setup(Inventory_UI, Group);
+        public void SetGroup<TSelf>( Container_UI<TSelf> Container_UI, ItemGroup Group ) where TSelf : Container_UI<TSelf> => Setup(Container_UI, Group);
 
-        void Setup( Inventory_UI Inventory_UI, ItemGroupOrNone Group ) {
+        void Setup<TSelf>( Container_UI<TSelf> Container_UI, ItemGroupOrNone Group ) where TSelf : Container_UI<TSelf> {
             this.Group   = Group;
-            _Icon.sprite = Inventory_UI.GetGroupIcon(Group);
+            _Icon.sprite = Container_UI.GetGroupIcon(Group);
             _Button.onClick.RemoveAllListeners();
-            void Call() => Inventory_UI.OnGroup(Group);
+            void Call() => Container_UI.OnGroup(Group);
             _Button.onClick.AddListener(Call);
             SetSelected(false);
         }

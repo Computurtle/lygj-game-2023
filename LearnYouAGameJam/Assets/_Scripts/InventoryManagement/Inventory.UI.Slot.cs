@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 namespace LYGJ {
-    public sealed class Inventory_Slot : Inventory_ItemPreview {
+    public class Inventory_Slot : Inventory_ItemPreview {
         [Title("Interaction")]
         [SerializeField, Tooltip("The button component."), Required, ChildGameObjectsOnly]
         Button _Button = null!;
@@ -17,19 +17,15 @@ namespace LYGJ {
         }
         #endif
 
-        #region Overrides of Inventory_ItemPreview
-
-        /// <inheritdoc />
-        public override void SetItem( Inventory_UI Inventory_UI, ItemInstance Item ) {
-            base.SetItem(Inventory_UI, Item);
+        /// <inheritdoc cref="Inventory_ItemPreview.SetItem"/>
+        public void SetItem( Inventory_UI Inventory_UI, ItemInstance Item ) {
+            base.SetItem(Item);
             _Button.onClick.RemoveAllListeners();
             if (!Item.IsNone) {
                 void Call() => Inventory_UI.ShowPreview(Item);
                 _Button.onClick.AddListener(Call);
             }
         }
-
-        #endregion
 
     }
 }

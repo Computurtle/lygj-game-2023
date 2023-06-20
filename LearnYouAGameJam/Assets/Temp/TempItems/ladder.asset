@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 578a33e064824f9a8c512f8a9c05bacc, type: 3}
-  m_Name: stairway
+  m_Name: ladder
   m_EditorClassIdentifier: 
   <ID>k__BackingField: stairway
   <Name>k__BackingField: Stairway
   <Description>k__BackingField: 
-  <Type>k__BackingField: 0
+  <Type>k__BackingField: 12
   <Icon>k__BackingField: {fileID: 21300000, guid: decb384908ba89c4886e7d1012ea72dc,
     type: 3}

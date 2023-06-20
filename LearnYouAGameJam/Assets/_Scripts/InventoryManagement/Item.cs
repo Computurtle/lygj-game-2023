@@ -132,25 +132,34 @@ namespace LYGJ.InventoryManagement {
 
     }
 
-    [Serializable]
-    public readonly struct ItemInstance {
+    [Serializable, InlineProperty]
+    public sealed class ItemInstance : ISerializationCallbackReceiver {
         /// <summary> The item. </summary>
-        [ShowInInspector, HorizontalGroup]
-        public readonly Item Item;
+        [field: SerializeField, HorizontalGroup, HideLabel]
+        public Item Item { get; private set; } = null!;
 
         /// <summary> The item amount. </summary>
-        [ShowInInspector, HorizontalGroup, LabelText("x"), LabelWidth(20f)]
-        public readonly uint Amount;
+        [field: SerializeField, HorizontalGroup(0.3f), LabelText("x"), LabelWidth(20f)]
+        public uint Amount { get; private set; } = 1u;
 
         /// <summary> Whether this is a 'none' item. </summary>
-        public readonly bool IsNone;
+        public readonly bool IsNone = false;
 
         /// <summary> The item name. </summary>
         /// <param name="Item"> The item. </param>
         /// <param name="Amount"> The item amount. </param>
         /// <exception cref="ArgumentNullException"> Thrown if <paramref name="Item"/> is null. </exception>
         /// <exception cref="ArgumentOutOfRangeException"> Thrown if <paramref name="Amount"/> is zero. </exception>
-        public ItemInstance( Item Item, in uint Amount = 1u ) : this(Item, Amount, false) { }
+        public ItemInstance( Item Item, in uint Amount = 1u ) {
+            if (Item   == null) { throw new ArgumentNullException(nameof(Item), "Item cannot be null."); }
+            if (Amount == 0u) { throw new ArgumentOutOfRangeException(nameof(Amount), Amount, "Amount must be greater than zero."); }
+            this.Item   = Item;
+            this.Amount = Amount;
+            IsNone      = false;
+        }
+
+        [Obsolete("This constructor is for serialization only and should not be used.")]
+        public ItemInstance() { }
 
         ItemInstance( Item Item, in uint Amount, bool IsNone ) {
             if (!IsNone) {
@@ -207,6 +216,20 @@ namespace LYGJ.InventoryManagement {
 
         /// <inheritdoc />
         public override string ToString() => $"{Item} x{Amount:N0}";
+
+        #endregion
+
+        #region Implementation of ISerializationCallbackReceiver
+
+        /// <inheritdoc />
+        public void OnBeforeSerialize() {
+            if (IsNone) {
+                Debug.LogWarning("Should not serialise 'None' items.", this);
+            }
+        }
+
+        /// <inheritdoc />
+        public void OnAfterDeserialize() { }
 
         #endregion
 

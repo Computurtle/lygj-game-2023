@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using LYGJ.Common;
 using LYGJ.InventoryManagement;
 using UnityEditor;
@@ -79,6 +80,18 @@ namespace LYGJ {
             }
 
             return false;
+        }
+
+        [MenuItem("Tools/Prototype/Add all Items to Inventory", false)]
+        public static void AddAllItemsToInventory() {
+            Item[] Items = AssetDatabase.FindAssets("t:Item")
+                .Select(AssetDatabase.GUIDToAssetPath)
+                .Select(AssetDatabase.LoadAssetAtPath<Item>)
+                .ToArray();
+            const int Min = 1, Max = 99;
+            foreach (Item Item in Items) {
+                Inventory.Add(Item, (uint)Random.Range(Min, Max));
+            }
         }
 
     }

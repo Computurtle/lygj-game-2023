@@ -202,7 +202,7 @@ namespace LYGJ.InventoryManagement {
         }
 
         /// <inheritdoc cref="GetEnumerator"/>
-        public static IEnumerator<ItemInstance> All => Instance.GetEnumerator();
+        public static IEnumerable<ItemInstance> All => Instance;
 
         /// <inheritdoc />
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
