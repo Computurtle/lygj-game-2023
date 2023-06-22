@@ -15,15 +15,18 @@ namespace LYGJ.AudioManagement {
     [CreateAssetMenu(menuName = "The Deliverer/Audio/SFX", fileName = "New SFX", order = 1000)]
     public sealed class SFX : ScriptableObject {
         /// <summary> Gets the audio clips to pick from. </summary>
-        [field: SerializeField, Tooltip("The audio clips to pick from.")] public AudioClip[] Clips { get; private set; } = Array.Empty<AudioClip>();
+        [field: SerializeField, Tooltip("The audio clips to pick from."), ListDrawerSettings(DefaultExpandedState = true)]
+        public AudioClip[] Clips { get; private set; } = Array.Empty<AudioClip>();
 
         int _LastIndex = -1;
 
         /// <summary> Gets the volume to play the clip at. </summary>
-        [field: SerializeField, Tooltip("The volume to play the clip at."), Range(0f, 1f)] public float Volume { get; private set; } = 1f;
+        [field: SerializeField, Tooltip("The volume to play the clip at."), Range(0f, 1f)]
+        public float Volume { get; private set; } = 1f;
 
         /// <summary> Gets the random pitch variation to play the clip at. </summary>
-        [field: SerializeField, Tooltip("The random pitch variation to play the clip at."), LabelText("Variance"), MinMaxSlider(0f, 2f, true), ToggleGroup(nameof(_UsePitchVariance), "Pitch Variance")] public Vector2 PitchVariance { get; private set; } = new(0.9f, 1.1f);
+        [field: SerializeField, Tooltip("The random pitch variation to play the clip at."), LabelText("Variance"), MinMaxSlider(0f, 2f, true), ToggleGroup(nameof(_UsePitchVariance), "Pitch Variance")]
+        public Vector2 PitchVariance { get; private set; } = new(0.9f, 1.1f);
 
         /// <summary> Gets the pitch to play the clip at. </summary>
         public float Pitch => UsePitchVariance ? Random.Range(PitchVariance.x, PitchVariance.y) : 1f;
@@ -31,13 +34,16 @@ namespace LYGJ.AudioManagement {
         /// <summary> Gets whether or not to use pitch variance. </summary>
         public bool UsePitchVariance => _UsePitchVariance;
 
-        [SerializeField, ToggleGroup(nameof(_UsePitchVariance), "Pitch Variance"), Tooltip("Whether or not to use pitch variance.")] bool _UsePitchVariance = true;
+        [SerializeField, ToggleGroup(nameof(_UsePitchVariance), "Pitch Variance"), Tooltip("Whether or not to use pitch variance.")]
+        bool _UsePitchVariance = true;
 
         /// <summary> The mixer to play the clip on. </summary>
-        [field: SerializeField, Tooltip("The mixer to play the clip on."), OnValueChanged("UpdateFromMixer")] public Mixer Mixer { get; private set; } = Mixer.SFX;
+        [field: SerializeField, Tooltip("The mixer to play the clip on."), OnValueChanged("UpdateFromMixer")]
+        public Mixer Mixer { get; private set; } = Mixer.SFX;
 
         /// <summary> Whether or not to play the clip globally, or in 3D space. </summary>
-        [field: SerializeField, Tooltip("Whether or not to play the clip globally, or in 3D space.")] public bool Is3D { get; private set; } = false;
+        [field: SerializeField, Tooltip("Whether or not to play the clip globally, or in 3D space.")]
+        public bool Is3D { get; private set; } = false;
 
         static T? GetRandom<T>( IReadOnlyList<T> List, ref int LastIndex ) {
             int Ln = List.Count;
@@ -147,6 +153,10 @@ namespace LYGJ.AudioManagement {
 
             return Token.IsCancellationRequested ? UniTask.FromCanceled(Token) : UniTask.CompletedTask;
         }
+
+        /// <summary> Gets a random clip from the <see cref="Clips"/> list. </summary>
+        /// <returns> The random clip. </returns>
+        public AudioClip? GetRandomClip() => GetRandom(Clips, ref _LastIndex);
 
         #if UNITY_EDITOR
         static string GetFolder( string AssetPath ) {

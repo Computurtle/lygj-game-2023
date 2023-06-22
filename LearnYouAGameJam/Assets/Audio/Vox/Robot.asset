@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 09f695de46754d0e998f308dc96c9298, type: 3}
+  m_Name: Robot
+  m_EditorClassIdentifier: 
+  <Clips>k__BackingField:
+  - {fileID: 8300000, guid: 9c1a9512f941ac44b84d68ab53162bc7, type: 3}
+  - {fileID: 8300000, guid: 93fbd99a84dcf0b49af2bbde73d69eaf, type: 3}
+  - {fileID: 8300000, guid: f88bc5f848736b94cbc3f6ef5dedcf0e, type: 3}
+  - {fileID: 8300000, guid: f9198451d81ab374f8c93e235f0ca49b, type: 3}
+  <Volume>k__BackingField: 1
+  <PitchVariance>k__BackingField: {x: 0.9, y: 1.1}
+  _UsePitchVariance: 1
+  <Mixer>k__BackingField: 5
+  <Is3D>k__BackingField: 0

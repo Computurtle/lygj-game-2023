@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using Sirenix.Utilities;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 using Object = UnityEngine.Object;
@@ -18,13 +19,13 @@ namespace LYGJ.Common {
                     #if UNITY_EDITOR
                     if (Application.isPlaying) {
                         #endif
-                        Debug.LogWarning($"No instance of {typeof(T).Name} was set. Make sure that cross-script dependencies are performed in Start() or later.");
+                        Debug.LogWarning($"No instance of {typeof(T).GetNiceName()} was set. Make sure that cross-script dependencies are performed in Start() or later.");
                         #if UNITY_EDITOR
                     }
                     #endif
                     _Instance = FindObjectOfType<T>();
                     if (_Instance == null) {
-                        throw new SingletonNotFoundException($"No instance of {typeof(T).Name} found in the scene.");
+                        throw new SingletonNotFoundException($"No instance of {typeof(T).GetNiceName()} found in the scene.");
                     }
                 }
                 return _Instance;
@@ -49,6 +50,7 @@ namespace LYGJ.Common {
                 foreach (T Instance in FindObjectsOfType<T>()) {
                     Debug.LogWarning($"\tInstance: {Instance.name}.", Instance);
                 }
+                return;
             }
             #endif
             _Instance = (T)this;

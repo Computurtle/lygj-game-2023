@@ -9,13 +9,46 @@ namespace LYGJ.InventoryManagement {
     [CreateAssetMenu(fileName = "New Item", menuName = "LYGJ/Inventory/Item")]
     public sealed class Item : ScriptableObject, IEquatable<Item>, IComparable<Item>, IComparable {
         /// <summary> The item ID. </summary>
-        [field: SerializeField, Tooltip("The item ID.")] public string ID { get; private set; } = string.Empty;
+        [field: SerializeField, Tooltip("The item ID.")]
+        public string ID {
+            get;
+            #if !UNITY_EDITOR
+            private
+            #endif
+            set;
+        } = string.Empty;
 
         /// <summary> The item name. </summary>
-        [field: SerializeField, Tooltip("The item name.")] public string Name { get; private set; } = string.Empty;
+        [field: SerializeField, Tooltip("The item name.")]
+        public string Name {
+            get;
+            #if !UNITY_EDITOR
+            private
+            #endif
+            set;
+        } = string.Empty;
 
         /// <summary> The item description. </summary>
-        [field: SerializeField, Multiline, Tooltip("The item description.")] public string Description { get; private set; } = string.Empty;
+        [field: SerializeField, Multiline, Tooltip("The item description.")]
+        public string Description { get; private set; } = string.Empty;
+
+        /// <summary> The item type. </summary>
+        [field: SerializeField, Tooltip("The item type."), HorizontalGroup("Type")]
+        public ItemType Type { get; private set; }
+
+        /// <summary> The item group. </summary>
+        [ShowInInspector, ReadOnly, Tooltip("The item group."), HorizontalGroup("Type")]
+        public ItemGroup Group => Type.GetAttribute<ItemType, ItemGroupAttribute>().Group;
+
+        /// <summary> The item icon. </summary>
+        [field: SerializeField, Tooltip("The item icon.")]
+        public Sprite? Icon {
+            get;
+            #if !UNITY_EDITOR
+            private
+            #endif
+            set;
+        } = null;
 
         #if UNITY_EDITOR
         void Reset() {
@@ -99,30 +132,43 @@ namespace LYGJ.InventoryManagement {
 
     }
 
-    [Serializable]
-    public readonly struct ItemInstance {
+    [Serializable, InlineProperty]
+    public sealed class ItemInstance : ISerializationCallbackReceiver {
         /// <summary> The item. </summary>
-        [ShowInInspector, HorizontalGroup]
-        public readonly Item Item;
+        [field: SerializeField, HorizontalGroup, HideLabel]
+        public Item Item { get; private set; } = null!;
 
         /// <summary> The item amount. </summary>
-        [ShowInInspector, HorizontalGroup, LabelText("x"), LabelWidth(20f)]
-        public readonly uint Amount;
+        [field: SerializeField, HorizontalGroup(0.3f), LabelText("x"), LabelWidth(20f)]
+        public uint Amount { get; private set; } = 1u;
+
+        /// <summary> Whether this is a 'none' item. </summary>
+        public readonly bool IsNone = false;
 
         /// <summary> The item name. </summary>
         /// <param name="Item"> The item. </param>
         /// <param name="Amount"> The item amount. </param>
         /// <exception cref="ArgumentNullException"> Thrown if <paramref name="Item"/> is null. </exception>
         /// <exception cref="ArgumentOutOfRangeException"> Thrown if <paramref name="Amount"/> is zero. </exception>
-        public ItemInstance( Item Item, in uint Amount = 1u ) : this(Item, Amount, false) { }
+        public ItemInstance( Item Item, in uint Amount = 1u ) {
+            if (Item   == null) { throw new ArgumentNullException(nameof(Item), "Item cannot be null."); }
+            if (Amount == 0u) { throw new ArgumentOutOfRangeException(nameof(Amount), Amount, "Amount must be greater than zero."); }
+            this.Item   = Item;
+            this.Amount = Amount;
+            IsNone      = false;
+        }
 
-        ItemInstance( Item Item, in uint Amount, bool BypassChecks ) {
-            if (!BypassChecks) {
+        [Obsolete("This constructor is for serialization only and should not be used.")]
+        public ItemInstance() { }
+
+        ItemInstance( Item Item, in uint Amount, bool IsNone ) {
+            if (!IsNone) {
                 if (Item   == null) { throw new ArgumentNullException(nameof(Item), "Item cannot be null."); }
                 if (Amount == 0u) { throw new ArgumentOutOfRangeException(nameof(Amount), Amount, "Amount must be greater than zero."); }
             }
             this.Item   = Item;
             this.Amount = Amount;
+            this.IsNone = IsNone;
         }
 
         /// <summary> An empty item instance. </summary>
@@ -170,6 +216,20 @@ namespace LYGJ.InventoryManagement {
 
         /// <inheritdoc />
         public override string ToString() => $"{Item} x{Amount:N0}";
+
+        #endregion
+
+        #region Implementation of ISerializationCallbackReceiver
+
+        /// <inheritdoc />
+        public void OnBeforeSerialize() {
+            if (IsNone) {
+                Debug.LogWarning("Should not serialise 'None' items.", this);
+            }
+        }
+
+        /// <inheritdoc />
+        public void OnAfterDeserialize() { }
 
         #endregion
 

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 using SysEnum = System.Enum;
 
 namespace LYGJ.Common {
@@ -42,8 +43,10 @@ namespace LYGJ.Common {
             UnderlyingType = Enum.GetUnderlyingType(typeof(TEnum));
             foreach (TEnum Value in Values) {
                 EnumDef Def = new(Value, UnderlyingType);
-                _Values.Add(Value, Def);
+                _Values.TryAdd(Value, Def);
             }
+            Count = _Values.Count;
+            _Values.TrimExcess(Count);
 
             IsFlags = typeof(TEnum).GetCustomAttribute<FlagsAttribute>() != null;
         }
@@ -165,5 +168,147 @@ namespace LYGJ.Common {
             }
             return Result;
         }
+
+        /// <summary> Gets whether the two given values are equal. </summary>
+        /// <param name="Value1"> The first value to compare. </param>
+        /// <param name="Value2"> The second value to compare. </param>
+        /// <returns> <see langword="true"/> if the two given values are equal; otherwise, <see langword="false"/>. </returns>
+        public static bool Equals( TEnum Value1, TEnum Value2 ) => EqualityComparer<TEnum>.Default.Equals(Value1, Value2);
+
+        /// <summary> Gets the index of the given value. </summary>
+        /// <param name="Value"> The value to get the index of. </param>
+        /// <returns> The index of the given value, or <c>-1</c> if the given value is not defined. </returns>
+        public static int IndexOf( TEnum Value ) {
+            if (!IsDefined(Value)) {
+                return -1;
+            }
+
+            int I = 0;
+            foreach (TEnum EnumValue in Values) {
+                if (Equals(EnumValue, Value)) {
+                    return I;
+                }
+                I++;
+            }
+            Debug.LogError($"Enum value '{Value}' is defined, but could not be found in enum '{typeof(TEnum).FullName}'.");
+            return -1;
+        }
+
+        /// <summary> Gets the value at the given index. </summary>
+        /// <param name="Index"> The index to get the value of. </param>
+        /// <returns> The value at the given index. </returns>
+        /// <exception cref="ArgumentOutOfRangeException"> Thrown if the given index is out of range. </exception>
+        public static TEnum ValueAt( int Index ) {
+            if (Index < 0 || Index >= Count) {
+                throw new ArgumentOutOfRangeException(nameof(Index), Index, $"Index must be between 0 and {Count - 1}.");
+            }
+            int I = 0;
+            foreach (TEnum EnumValue in Values) {
+                if (I == Index) {
+                    return EnumValue;
+                }
+                I++;
+            }
+            throw new ArgumentOutOfRangeException(nameof(Index), Index, $"Index must be between 0 and {Count - 1}.");
+        }
+
+        /// <summary> Gets the next value after the given value. </summary>
+        /// <param name="Value"> The value to get the next value of. </param>
+        /// <param name="Loop"> Whether to loop back to the first value if the given value is the last value. </param>
+        /// <returns> The next value after the given value. </returns>
+        public static TEnum Next( TEnum Value, bool Loop = true ) {
+            int Index = IndexOf(Value);
+            if (Index == -1) {
+                throw new ArgumentException($"Value '{Value}' is not defined in enum '{typeof(TEnum).FullName}'.");
+            }
+
+            Index++;
+            if (Index >= Count) {
+                if (Loop) {
+                    Index = 0;
+                } else {
+                    Index = Count - 1;
+                }
+            }
+
+            return ValueAt(Index);
+        }
+
+        /// <summary> Gets the previous value before the given value. </summary>
+        /// <param name="Value"> The value to get the previous value of. </param>
+        /// <param name="Loop"> Whether to loop back to the last value if the given value is the first value. </param>
+        /// <returns> The previous value before the given value. </returns>
+        public static TEnum Previous( TEnum Value, bool Loop = true ) {
+            int Index = IndexOf(Value);
+            if (Index == -1) {
+                throw new ArgumentException($"Value '{Value}' is not defined in enum '{typeof(TEnum).FullName}'.");
+            }
+
+            Index--;
+            if (Index < 0) {
+                if (Loop) {
+                    Index = Count - 1;
+                } else {
+                    Index = 0;
+                }
+            }
+
+            return ValueAt(Index);
+        }
+
+        /// <summary> Gets the first value in the enum. </summary>
+        /// <returns> The first value in the enum. </returns>
+        /// <remarks> This is not necessarily the minimum value, but the first value defined in the enum. </remarks>
+        public static TEnum First => ValueAt(0);
+
+        /// <summary> Gets the last value in the enum. </summary>
+        /// <returns> The last value in the enum. </returns>
+        /// <remarks> This is not necessarily the maximum value, but the last value defined in the enum. </remarks>
+        public static TEnum Last => ValueAt(Count - 1);
+
+        /// <summary> Gets the minimum value in the enum. </summary>
+        /// <returns> The minimum value in the enum. </returns>
+        /// <remarks> This is not necessarily the first defined value, but the minimum value defined in the enum. </remarks>
+        public static TEnum Min => Values.Min();
+
+        /// <summary> Gets the maximum value in the enum. </summary>
+        /// <returns> The maximum value in the enum. </returns>
+        /// <remarks> This is not necessarily the last defined value, but the maximum value defined in the enum. </remarks>
+        public static TEnum Max => Values.Max();
+    }
+
+    public static class EnumExtensions {
+        /// <inheritdoc cref="Enum{TEnum}.Name(TEnum)"/>
+        public static string GetName<TEnum>( this TEnum Value ) where TEnum : struct, Enum => Enum<TEnum>.Name(Value);
+
+        /// <inheritdoc cref="Enum{TEnum}.Underlying(TEnum)"/>
+        public static IComparable GetUnderlyingValue<TEnum>( this TEnum Value ) where TEnum : struct, Enum => Enum<TEnum>.Underlying(Value);
+
+        /// <inheritdoc cref="Enum{TEnum}.Field(TEnum)"/>
+        public static FieldInfo GetField<TEnum>( this TEnum Value ) where TEnum : struct, Enum => Enum<TEnum>.Field(Value);
+
+        /// <inheritdoc cref="Enum{TEnum}.Attribute{TAttribute}(TEnum)"/>
+        public static TAttribute GetAttribute<TEnum, TAttribute>( this TEnum Value ) where TEnum : struct, Enum where TAttribute : Attribute => Enum<TEnum>.Attribute<TAttribute>(Value);
+
+        /// <inheritdoc cref="Enum{TEnum}.TryAttribute{TAttribute}(TEnum, out TAttribute)"/>
+        public static bool TryGetAttribute<TEnum, TAttribute>( this TEnum Value, [NotNullWhen(true)] out TAttribute? Attribute ) where TEnum : struct, Enum where TAttribute : Attribute => Enum<TEnum>.TryAttribute(Value, out Attribute);
+
+        /// <inheritdoc cref="Enum{TEnum}.AppendName(StringBuilder, TEnum)"/>
+        public static StringBuilder Append<TEnum>( this StringBuilder Builder, TEnum Value ) where TEnum : struct, Enum => Enum<TEnum>.AppendName(Builder, Value);
+
+        /// <inheritdoc cref="Enum{TEnum}.IsDefined(TEnum)"/>
+        public static bool IsDefined<TEnum>( this TEnum Value ) where TEnum : struct, Enum => Enum<TEnum>.IsDefined(Value);
+
+        /// <inheritdoc cref="Enum{TEnum}.IndexOf(TEnum)"/>
+        public static int IndexOf<TEnum>( this TEnum Value ) where TEnum : struct, Enum => Enum<TEnum>.IndexOf(Value);
+
+        /// <inheritdoc cref="Enum{TEnum}.ValueAt(int)"/>
+        public static TEnum GetEnumValueAtIndex<TEnum>( this int Index ) where TEnum : struct, Enum => Enum<TEnum>.ValueAt(Index);
+
+        /// <inheritdoc cref="Enum{TEnum}.Next(TEnum, bool)"/>
+        public static TEnum Next<TEnum>( this TEnum Value, bool Loop = true ) where TEnum : struct, Enum => Enum<TEnum>.Next(Value, Loop);
+
+        /// <inheritdoc cref="Enum{TEnum}.Previous(TEnum, bool)"/>
+        public static TEnum Previous<TEnum>( this TEnum Value, bool Loop = true ) where TEnum : struct, Enum => Enum<TEnum>.Previous(Value, Loop);
     }
 }

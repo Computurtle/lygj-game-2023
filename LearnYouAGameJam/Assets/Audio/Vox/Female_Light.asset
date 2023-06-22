@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 09f695de46754d0e998f308dc96c9298, type: 3}
+  m_Name: Female_Light
+  m_EditorClassIdentifier: 
+  <Clips>k__BackingField:
+  - {fileID: 8300000, guid: 6bd49d5f578e64c43ac0375efa97b4d5, type: 3}
+  - {fileID: 8300000, guid: b982c14cd2994a743ab90473ceda9ffa, type: 3}
+  - {fileID: 8300000, guid: eddc509b05436654db6f61e57d1fa319, type: 3}
+  - {fileID: 8300000, guid: 547cfba5be1a1e84692137165b5f3e89, type: 3}
+  <Volume>k__BackingField: 1
+  <PitchVariance>k__BackingField: {x: 0.9, y: 1.1}
+  _UsePitchVariance: 1
+  <Mixer>k__BackingField: 5
+  <Is3D>k__BackingField: 0

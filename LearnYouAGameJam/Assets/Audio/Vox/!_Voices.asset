@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1c0feffb4f3b4badbe60c5ef00d5252c, type: 3}
+  m_Name: '!_Voices'
+  m_EditorClassIdentifier: 
+  _Lookup:
+    _Pairs:
+    - _Key: 0
+      _Value: {fileID: 11400000, guid: e4a119c1a5d549a4f98617f5692099f4, type: 2}
+    - _Key: 1
+      _Value: {fileID: 11400000, guid: f7cecaecc7c938e45b14dce4ff5a63e2, type: 2}
+    - _Key: 2
+      _Value: {fileID: 11400000, guid: 8127de4e0b35c344dbb4aafb17bc6b5e, type: 2}
+    - _Key: 3
+      _Value: {fileID: 11400000, guid: 8481ec73385a4274ba7e5faaacb96b10, type: 2}
+    - _Key: 4
+      _Value: {fileID: 11400000, guid: e7a07da2935ead24aa8cabf61c023870, type: 2}
+    - _Key: 5
+      _Value: {fileID: 11400000, guid: f413214f3d4d33240a9b190c060a7d62, type: 2}
+    - _Key: 6
+      _Value: {fileID: 11400000, guid: 6d42c714311f6ab46b003417bc829d23, type: 2}
+    - _Key: 7
+      _Value: {fileID: 11400000, guid: 354be802b206f7441bcc5d73ceefb4f0, type: 2}

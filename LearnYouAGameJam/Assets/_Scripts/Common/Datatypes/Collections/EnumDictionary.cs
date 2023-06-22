@@ -11,6 +11,30 @@ namespace LYGJ.Common.Datatypes.Collections {
     public sealed class EnumDictionary<TEnum, TValue> : IDictionary<TEnum, TValue>, IReadOnlyDictionary<TEnum, TValue> where TEnum : struct, Enum {
         [SerializeField, HideInInspector] SortedList<Pair> _Pairs = new();
 
+        /// <summary> Creates a new empty <see cref="EnumDictionary{TEnum,TValue}"/>. </summary>
+        public EnumDictionary() { }
+
+        /// <summary> Creates a new <see cref="EnumDictionary{TEnum,TValue}"/>, auto-populating it with the given <paramref name="DefaultValue"/> for each enum value. </summary>
+        /// <param name="DefaultValue"> The default value to use for each enum value. </param>
+        public EnumDictionary( TValue DefaultValue ) {
+            foreach (TEnum Value in Enum<TEnum>.Values.Distinct()) {
+                _Pairs.Add(new(Value, DefaultValue));
+            }
+        }
+
+        #if UNITY_EDITOR
+        bool MissingAny() => Enum<TEnum>.Values.Any(Value => !ContainsKey(Value));
+        [Button("Auto-Populate"), ShowIf(nameof(MissingAny)), ContextMenu("Auto-Populate")]
+        void AutoPopulate() {
+            TValue DefaultValue = default!;
+            foreach (TEnum Value in Enum<TEnum>.Values.Distinct()) {
+                if (!ContainsKey(Value)) {
+                    _Pairs.Add(new(Value, DefaultValue));
+                }
+            }
+        }
+        #endif
+
         [Serializable]
         sealed class Pair : IEquatable<Pair>, IComparable<Pair>, IComparable {
             [SerializeField, HorizontalGroup] TEnum  _Key;
@@ -147,8 +171,11 @@ namespace LYGJ.Common.Datatypes.Collections {
         /// <inheritdoc />
         bool ICollection<KeyValuePair<TEnum,TValue>>.Remove( KeyValuePair<TEnum, TValue> Item ) => Remove(Item.Key);
 
-        /// <inheritdoc />
+        /// <inheritdoc cref="ICollection{T}.Count"/>
         public int Count => _Pairs.Count;
+
+        /// <inheritdoc />
+        int ICollection<KeyValuePair<TEnum,TValue>>.Count => _Pairs.Count;
 
         /// <inheritdoc />
         bool ICollection<KeyValuePair<TEnum,TValue>>.IsReadOnly => false;
