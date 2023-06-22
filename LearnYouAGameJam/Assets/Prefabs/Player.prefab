@@ -302,6 +302,7 @@ GameObject:
   - component: {fileID: 3649524392146133650}
   - component: {fileID: 5210702537025708227}
   - component: {fileID: 2285464681016576932}
+  - component: {fileID: 6520181117167427895}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -422,7 +423,7 @@ MonoBehaviour:
   _TriggerInteraction: 2
   _Origin: {fileID: 1813280210565229996}
   _Radius: 3
-  _MaxAngle: 45
+  _MaxAzimuth: 0.7853982
   _Cooldown: 0.25
 --- !u!114 &1813280211023920302
 MonoBehaviour:
@@ -582,6 +583,32 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   _OnInventoryCleared:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &6520181117167427895
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1813280211023920303}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1ea3d93c6ccb43c0bc34e2f34e96174a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _Health: 100
+  _MaxHealth: 100
+  _OnDamageTaken:
+    m_PersistentCalls:
+      m_Calls: []
+  _OnDeath:
+    m_PersistentCalls:
+      m_Calls: []
+  _OnRevive:
+    m_PersistentCalls:
+      m_Calls: []
+  _OnHeal:
     m_PersistentCalls:
       m_Calls: []
 --- !u!1 &1813280211032281841

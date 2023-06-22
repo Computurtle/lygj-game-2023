@@ -173,6 +173,7 @@ namespace LYGJ.DialogueSystem {
             Pointer.SetVisible(PointerPriority.Dialogue);
             PlayerMotor.SetCanMove(MotorPriority.Dialogue, false);
             PlayerInteractor.SetCanInteract(InteractionPriority.Dialogue, false);
+            PlayerHealth.SetInvulnerable(HealthPriority.Dialogue);
         }
 
         void OnDialogueEnded( DialogueChain Chain, int Exit ) {
@@ -188,6 +189,7 @@ namespace LYGJ.DialogueSystem {
                 Pointer.ClearVisible(PointerPriority.Dialogue);
                 PlayerMotor.ClearCanMove(MotorPriority.Dialogue);
                 PlayerInteractor.ClearCanInteract(InteractionPriority.Dialogue);
+                PlayerHealth.ClearInvulnerable(HealthPriority.Dialogue);
             }
             Hide(this.GetCancellationTokenOnDestroy()).Forget();
         }
