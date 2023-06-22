@@ -1,34 +1,45 @@
-﻿using Sirenix.OdinInspector;
+﻿using System;
+using LYGJ.AudioManagement;
+using LYGJ.EntitySystem.PlayerManagement;
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace LYGJ.EntitySystem.EnemyManagement {
+    [RequireComponent(typeof(EnemyHealth))]
     public abstract class EnemyBase : MonoBehaviour {
+        [SerializeField, Tooltip("The health."), Required, ChildGameObjectsOnly]
+        EnemyHealth _Health = null!;
+
+        IDamageTaker Health => _Health;
+
         /// <summary> The enemy type. </summary>
         [ShowInInspector, ReadOnly, Tooltip("The enemy type.")]
         public abstract EnemyType Type { get; }
 
-        /// <summary> Whether this enemy is killed. </summary>
-        [ShowInInspector, ReadOnly, Tooltip("Whether the enemy has been killed."), HideInEditorMode, ToggleLeft]
-        public bool IsKilled { get; protected set; } = false;
-
-        /// <summary> Kills this enemy. </summary>
-        [Button, HideInEditorMode, DisableIf(nameof(IsKilled))]
-        public void Kill() {
-            if (IsKilled) {
-                Debug.LogWarning($"Tried to kill {this}, but it was already killed.", this);
-                return;
-            }
-            IsKilled = true;
-            KillInternal();
-            Enemies.MarkKilled(this);
+        protected virtual void Awake() {
+            Enemies.Add(this);
+            _Health.Died += OnDied;
         }
 
-        /// <summary> Called when this enemy is killed. </summary>
-        protected virtual void KillInternal() => Destroy(gameObject);
+        protected virtual void OnDestroy() {
+            try {
+                if (!Health.IsDead) {
+                    Enemies.Remove(this);
+                }
+            }
+            catch (MissingReferenceException) { }
+            catch (NullReferenceException) { }
+        }
 
-        protected virtual void Awake() => Enemies.Add(this);
+        [SerializeField, Tooltip("The sound to play when the enemy dies.")]
+        SFX? _DeathSound = null;
 
-        protected virtual void OnDestroy() => Enemies.Remove(this, Silent: IsKilled);
+        void OnDied() {
+            _DeathSound.Play(transform.position);
+            Enemies.Remove(this);
+            Destroy(gameObject);
+        }
+
     }
 
 }

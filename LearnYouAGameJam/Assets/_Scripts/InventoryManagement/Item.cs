@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using LYGJ.Common;
+using LYGJ.EntitySystem.PlayerManagement;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
@@ -57,6 +59,40 @@ namespace LYGJ.InventoryManagement {
             ID   = FileName;
             Name = FileName.ConvertNamingConvention(NamingConvention.TitleCase);
         }
+        #endif
+
+        /// <summary> Whether or not the given item type is an equippable type. </summary>
+        /// <param name="ItemType"> The item type to check. </param>
+        /// <returns> <see langword="true"/> if the item type is equippable, <see langword="false"/> otherwise. </returns>
+        public static bool IsEquippableType( ItemType ItemType ) =>
+            ItemType switch {
+                ItemType.Melee  => true,
+                ItemType.Ranged => true,
+                _               => false
+            };
+
+        /// <summary> The item equipment. </summary>
+        [field: SerializeField, Tooltip("The item equipment."), AssetsOnly, ShowIf("@" + nameof(IsEquippableType) + "(" + nameof(Type) + ")")]
+        public PlayerEquipment? Equipment {
+            get;
+            #if !UNITY_EDITOR
+            private
+            #endif
+            set;
+        } = null;
+
+        /// <summary> Whether or not the item is equippable. </summary>
+        [MemberNotNullWhen(true, nameof(Equipment))]
+        [ShowInInspector, ReadOnly, Tooltip("Whether or not the item is equippable."), ToggleLeft]
+        #if UNITY_EDITOR
+        [ValidateInput(nameof(Editor_MeleeEquipInvalid), "Equipment type was unexpected. Item type is melee, but the equipment does not implement MeleeEquipment.", InfoMessageType.Error)]
+        [ValidateInput(nameof(Editor_RangedEquipInvalid), "Equipment type was unexpected. Item type is ranged, but the equipment does not implement RangedEquipment.", InfoMessageType.Error)]
+        #endif
+        public bool IsEquippable => IsEquippableType(Type) && Equipment != null;
+
+        #if UNITY_EDITOR
+        bool Editor_MeleeEquipInvalid()  => Type != ItemType.Melee || Equipment == null || Equipment is MeleeEquipment;
+        bool Editor_RangedEquipInvalid() => Type != ItemType.Ranged || Equipment == null || Equipment is RangedEquipment;
         #endif
 
         #region Overrides of Object

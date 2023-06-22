@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 09f695de46754d0e998f308dc96c9298, type: 3}
+  m_Name: Scream_Male_Pain
+  m_EditorClassIdentifier: 
+  <Clips>k__BackingField:
+  - {fileID: 8300000, guid: ed8dbe510fd6a7244b9e8896b08321bf, type: 3}
+  - {fileID: 8300000, guid: 26cbb05ad5d9f84418443546a4983df7, type: 3}
+  - {fileID: 8300000, guid: cba3e4fd064fdcc4e93155091072e496, type: 3}
+  - {fileID: 8300000, guid: 1939367d4743bb244a00cd25474d08d4, type: 3}
+  - {fileID: 8300000, guid: fadba2322fdf8144fbb5e665f9b262e1, type: 3}
+  - {fileID: 8300000, guid: d89e4c5f25ce42b4aa5d3300b6c97e7f, type: 3}
+  <Volume>k__BackingField: 1
+  <PitchVariance>k__BackingField: {x: 0.9, y: 1.1}
+  _UsePitchVariance: 1
+  <Mixer>k__BackingField: 2
+  <Is3D>k__BackingField: 1
