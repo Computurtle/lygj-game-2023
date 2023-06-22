@@ -374,14 +374,22 @@ namespace LYGJ {
                         Repaint();
                     }
 
-                    Pointer.SetVisible(PointerPriority.Inventory);
+                    OnMakeVisible();
                     FadeIn();
                 } else {
-                    Pointer.ClearVisible(PointerPriority.Inventory);
+                    OnMakeInvisible();
                     FadeOut();
                 }
             }
         }
+
+        /// <summary> Raised when the inventory UI becomes visible. </summary>
+        /// <remarks> Use this for overriding various variables (i.e. whether the pointer is visible, if the player can move, etc.). </remarks>
+        protected abstract void OnMakeVisible();
+
+        /// <summary> Raised when the inventory UI becomes invisible. </summary>
+        /// <remarks> Use this for clearing overrides of various variables (i.e. whether the pointer is visible, if the player can move, etc.). </remarks>
+        protected abstract void OnMakeInvisible();
 
         /// <summary> Whether a repaint is queued for when the interface next becomes visible. </summary>
         protected bool RepaintQueued = true;

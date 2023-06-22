@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using LYGJ.Common;
+using LYGJ.EntitySystem.PlayerManagement;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
@@ -13,6 +14,20 @@ namespace LYGJ.InventoryManagement {
 
         /// <inheritdoc />
         protected override bool CanPrefillEmptySlots => false;
+
+        /// <inheritdoc />
+        protected override void OnMakeVisible() {
+            Pointer.SetVisible(PointerPriority.Barter);
+            PlayerMotor.SetCanMove(MotorPriority.Barter, false);
+            PlayerInteractor.SetCanInteract(InteractionPriority.Barter, false);
+        }
+
+        /// <inheritdoc />
+        protected override void OnMakeInvisible() {
+            Pointer.ClearVisible(PointerPriority.Barter);
+            PlayerMotor.ClearCanMove(MotorPriority.Barter);
+            PlayerInteractor.ClearCanInteract(InteractionPriority.Barter);
+        }
 
         /// <inheritdoc />
         protected override void ReturnPooledSlots() => Pool<Barter_Slot>.ReturnAll(_SlotParent);
