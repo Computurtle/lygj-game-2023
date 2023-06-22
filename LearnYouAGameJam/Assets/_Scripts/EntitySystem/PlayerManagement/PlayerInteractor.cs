@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Cysharp.Threading.Tasks;
 using LYGJ.Common;
+using LYGJ.Common.Datatypes.Collections;
 using Sirenix.OdinInspector;
 using Sirenix.Utilities;
 using UnityEngine;
@@ -12,7 +13,7 @@ using IInteractable = LYGJ.Interactables.IInteractable;
 using Object = UnityEngine.Object;
 
 namespace LYGJ.EntitySystem.PlayerManagement {
-    public sealed class PlayerInteractor : MonoBehaviour {
+    public sealed class PlayerInteractor : SingletonMB<PlayerInteractor> {
         [Title("Optimisation")]
         [SerializeField, Tooltip("The layer for interaction detection.")] LayerMask               _Layer              = default;
         [SerializeField, Tooltip("The interaction with triggers.")]       QueryTriggerInteraction _TriggerInteraction = QueryTriggerInteraction.UseGlobal;
@@ -21,7 +22,7 @@ namespace LYGJ.EntitySystem.PlayerManagement {
 
         [Title("Detection")]
         [SerializeField, Tooltip("The origin for interaction detection scans."), Required, ChildGameObjectsOnly] Transform _Origin = null!;
-        [SerializeField, Tooltip("The radius for interaction detection scans."), SuffixLabel("m")]                                 float     _Radius = 0.5f;
+        [SerializeField, Tooltip("The radius for interaction detection scans."), SuffixLabel("m")] float _Radius = 0.5f;
 
         [Title("View Angle")]
         [SerializeField, Tooltip("The maximum angle, in degrees, between the origin and the target."), SuffixLabel("°"), Range(0, 360)] float _MaxAngle = 90f;
@@ -29,6 +30,17 @@ namespace LYGJ.EntitySystem.PlayerManagement {
 
         [Title("Safety")]
         [SerializeField, Tooltip("The minimum time that must elapse, in seconds, between interactions."), SuffixLabel("s"), MinValue(0)] float _Cooldown = 0.25f;
+
+        readonly PriorityList<InteractionPriority, bool> _CanInteractPriority = new(true);
+
+        /// <summary> Sets whether the player can interact. </summary>
+        /// <param name="Priority"> The priority of the override. </param>
+        /// <param name="CanMove"> Whether the player can interact. </param>
+        public static void SetCanInteract( InteractionPriority Priority, bool CanMove ) => Instance._CanInteractPriority.AddOverride(Priority, CanMove);
+
+        /// <summary> Clears the interact override with the given priority. </summary>
+        /// <param name="Priority"> The priority of the override. </param>
+        public static void ClearCanInteract( InteractionPriority Priority ) => Instance._CanInteractPriority.RemoveOverride(Priority);
 
         /// <summary> Ranks the given components by their suitability for interaction. </summary>
         /// <param name="Options"> The options to rank. </param>
@@ -106,6 +118,16 @@ namespace LYGJ.EntitySystem.PlayerManagement {
             _Origin = transform;
         }
         #endif
+
+        #region Overrides of SingletonMB<PlayerInteractor>
+
+        /// <inheritdoc />
+        protected override void Awake() {
+            base.Awake();
+            _CanInteractPriority.DefaultValue = true;
+        }
+
+        #endregion
 
         readonly Collider?[] _Detected = new Collider?[_MaxDetected];
 
@@ -275,13 +297,15 @@ namespace LYGJ.EntitySystem.PlayerManagement {
                 return;
             }
 
-            if (Interacting) {
+            if (Interacting || !_CanInteractPriority) {
                 ClearLast();
                 return;
             }
 
             { // Cleanup _Last if invalid (e.g. any part destroyed)
-                ClearLast();
+                if (_Last is { InvalidState: true }) {
+                    ClearLast();
+                }
             }
 
             // Scan for interactables
@@ -338,5 +362,21 @@ namespace LYGJ.EntitySystem.PlayerManagement {
                 Interact(L.Interactable);
             }
         }
+    }
+
+    public enum InteractionPriority {
+        /// <summary> General gameplay. </summary>
+        Gameplay,
+        /// <summary> A minigame. </summary>
+        Minigame,
+        /// <summary> General UI. </summary>
+        [Obsolete]
+        UI,
+        /// <summary> Inventory. </summary>
+        Inventory,
+        /// <summary> Dialogue. </summary>
+        Dialogue,
+        /// <summary> Pause Menu. </summary>
+        PauseMenu,
     }
 }
