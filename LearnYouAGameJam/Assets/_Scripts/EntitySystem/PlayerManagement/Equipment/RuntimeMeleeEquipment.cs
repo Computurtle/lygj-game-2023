@@ -34,6 +34,12 @@ namespace LYGJ.EntitySystem.PlayerManagement {
         [SerializeField, Tooltip("The trigger monitor for the weapon's collision detection."), Required, ChildGameObjectsOnly]
         TriggerMonitor _Trigger = null!;
 
+        [Title("Visuals")]
+        [SerializeField, Tooltip("The slash effect prefab."), AssetsOnly]
+        GameObject? _SlashEffect = null;
+        [SerializeField, Tooltip("Where to spawn the slash effect."), Required, ChildGameObjectsOnly, HideIf("@" + nameof(_SlashEffect) + " == null"), LabelText("Spawn Point")]
+        Transform _SlashEffectSpawnPoint = null!;
+
         #if UNITY_EDITOR
         void Reset() {
             _Anim    = GetComponentInChildren<Animator>();
@@ -80,6 +86,9 @@ namespace LYGJ.EntitySystem.PlayerManagement {
             _HitAnything = false;
             _Anim.SetTrigger(_SwingTriggerHash);
             _SwingSound.Play(transform.position);
+            if (_SlashEffect) {
+                Instantiate(_SlashEffect, _SlashEffectSpawnPoint.position, _SlashEffectSpawnPoint.rotation);
+            }
             yield return new WaitForSeconds(_SwingDuration);
             _Colliders.Clear();
             _Attacking = false;

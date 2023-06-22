@@ -122,7 +122,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _Health: {fileID: 6469643789441037879}
+  _DamageSounds:
+  - {fileID: 11400000, guid: 8634153a2d3f3a24e92a1e7dcaf4ca1a, type: 2}
+  - {fileID: 11400000, guid: 4130d41d17244c2489c562f8aa3b691a, type: 2}
   _DeathSound: {fileID: 11400000, guid: 72b8b839a3a3c9b47a5d12f671f2b39b, type: 2}
+  _WilhelmScream: {fileID: 11400000, guid: 5089f5b05964e7f44954b3275ede76ef, type: 2}
+  _WilhelmScreamChance: 0.01
 --- !u!114 &6469643789441037879
 MonoBehaviour:
   m_ObjectHideFlags: 0

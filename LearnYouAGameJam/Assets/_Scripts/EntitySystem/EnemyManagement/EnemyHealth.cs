@@ -115,7 +115,7 @@ namespace LYGJ.EntitySystem.EnemyManagement {
                     return;
             }
 
-            if (Amount > _Health) {
+            if (Amount >= _Health) {
                 _Health = 0f;
                 _OnDamageTaken.Invoke(Amount);
                 _OnDeath.Invoke();
