@@ -349,7 +349,7 @@
                 {
                     "name": "",
                     "id": "94f0d3b5-dad5-4096-832a-09e3d775c85c",
-                    "path": "<Keyboard>/e",
+                    "path": "<Keyboard>/f",
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
@@ -515,6 +515,17 @@
                     "name": "",
                     "id": "3d831074-6ffc-4e1a-b779-5038258516fa",
                     "path": "<Keyboard>/i",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "Inventory",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "72381975-f735-496b-8409-e276bf3ba8fa",
+                    "path": "<Keyboard>/e",
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",

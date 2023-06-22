@@ -61,6 +61,8 @@ namespace LYGJ.InventoryManagement {
         void Start() {
             Inventory.Changed += UpdateUI;
             void UpdateUI( Inventory.ChangeType Type, ItemInstance Item ) => Repaint();
+
+            PlayerInput.Inventory.Pressed += Toggle;
         }
 
         #region Item Preview
@@ -115,6 +117,9 @@ namespace LYGJ.InventoryManagement {
         [Button("Hide"), ButtonGroup("ShowHide"), EnableIf(nameof(Visible)), HideInEditorMode]
         void Editor_Hide() => Visible = false;
         #endif
+
+        /// <summary> Toggles the visibility of the inventory UI. </summary>
+        public void Toggle() => Visible = !Visible;
 
     }
 }
