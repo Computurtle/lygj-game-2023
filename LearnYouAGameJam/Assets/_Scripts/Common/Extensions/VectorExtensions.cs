@@ -30,7 +30,7 @@ namespace LYGJ.Common {
         
         public static Vector2Int AsVector2Int( this Vector2 V ) => new(Mathf.RoundToInt(V.x), Mathf.RoundToInt(V.y));
 
-        public static float GetRandom( this Vector2 V ) => Random.Range(V.x, V.y);
-        public static int GetRandom( this Vector2Int V ) => Random.Range(V.x, V.y);
+        public static float Random( this Vector2    V ) => UnityEngine.Random.Range(V.x, V.y);
+        public static int   Random( this Vector2Int V ) => UnityEngine.Random.Range(V.x, V.y);
     }
 }

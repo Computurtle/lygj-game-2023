@@ -63,6 +63,7 @@ namespace LYGJ.EntitySystem.PlayerManagement {
 
         void OnTriggerEntered( Collider Other ) {
             if (!_Attacking) { return; }
+            if (transform.IsChildOf(Other.transform)) { return; } // Ignore self collisions (i.e. can't stab yourself, idiot).
             if (!_Colliders.Add(Other)) { return; }
 
             if (Other.TryGetComponent(out IDamageTaker DamageTaker)) {

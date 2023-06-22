@@ -9,9 +9,17 @@ namespace LYGJ.EntitySystem.EnemyManagement {
     [RequireComponent(typeof(EnemyHealth))]
     public abstract class EnemyBase : MonoBehaviour {
         [SerializeField, Tooltip("The health."), Required, ChildGameObjectsOnly]
-        EnemyHealth _Health = null!;
+        // ReSharper disable once InconsistentNaming
+        protected EnemyHealth _Health = null!;
 
-        IDamageTaker Health => _Health;
+        /// <summary> The health. </summary>
+        protected IDamageTaker Health => _Health;
+
+        #if UNITY_EDITOR
+        protected virtual void Reset() {
+            _Health = GetComponent<EnemyHealth>();
+        }
+        #endif
 
         /// <summary> The enemy type. </summary>
         [ShowInInspector, ReadOnly, Tooltip("The enemy type.")]
@@ -39,7 +47,7 @@ namespace LYGJ.EntitySystem.EnemyManagement {
         SFX? _DeathSound = null;
         [SerializeField, Tooltip("The wilhelm scream sound."), HorizontalGroup("Wilhelm")]
         SFX? _WilhelmScream = null;
-        [SerializeField, Tooltip("The chance for a wilhelm scream to play when the enemy dies."), Range(0, 1), HorizontalGroup("Wilhelm"), LabelText("Chance"), LabelWidth(70f)]
+        [SerializeField, Tooltip("The chance for a wilhelm scream to play when the enemy dies."), Range(0, 1), HorizontalGroup("Wilhelm", 0.3f), LabelText("Chance"), LabelWidth(70f)]
         float _WilhelmScreamChance = 0.01f;
 
         void OnDamageTaken( float Damage ) {
