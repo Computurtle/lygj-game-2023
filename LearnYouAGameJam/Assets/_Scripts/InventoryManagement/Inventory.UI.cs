@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using LYGJ.Common;
+using LYGJ.EntitySystem.PlayerManagement;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
@@ -38,6 +39,20 @@ namespace LYGJ.InventoryManagement {
         }
 
         /// <inheritdoc />
+        protected override void OnMakeVisible() {
+            Pointer.SetVisible(PointerPriority.Inventory);
+            PlayerMotor.SetCanMove(MotorPriority.Inventory, false);
+            PlayerInteractor.SetCanInteract(InteractionPriority.Inventory, false);
+        }
+
+        /// <inheritdoc />
+        protected override void OnMakeInvisible() {
+            Pointer.ClearVisible(PointerPriority.Inventory);
+            PlayerMotor.ClearCanMove(MotorPriority.Inventory);
+            PlayerInteractor.ClearCanInteract(InteractionPriority.Inventory);
+        }
+
+        /// <inheritdoc />
         protected override void RepaintNow() {
             base.RepaintNow();
             Repaint_Preview();
@@ -46,6 +61,8 @@ namespace LYGJ.InventoryManagement {
         void Start() {
             Inventory.Changed += UpdateUI;
             void UpdateUI( Inventory.ChangeType Type, ItemInstance Item ) => Repaint();
+
+            PlayerInput.Inventory.Pressed += Toggle;
         }
 
         #region Item Preview
@@ -100,6 +117,9 @@ namespace LYGJ.InventoryManagement {
         [Button("Hide"), ButtonGroup("ShowHide"), EnableIf(nameof(Visible)), HideInEditorMode]
         void Editor_Hide() => Visible = false;
         #endif
+
+        /// <summary> Toggles the visibility of the inventory UI. </summary>
+        public void Toggle() => Visible = !Visible;
 
     }
 }

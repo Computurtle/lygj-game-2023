@@ -5,6 +5,7 @@ using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace LYGJ.InventoryManagement {
+    [AssetsOnly, AssetSelector]
     [CreateAssetMenu(fileName = "New Shop", menuName = "LYGJ/Inventory/Shop")]
     public sealed class Shop : ScriptableObject {
         [SerializeField, Tooltip("The items available for purchase."), LabelText("Purchasables"), ListDrawerSettings(ShowFoldout = false)]

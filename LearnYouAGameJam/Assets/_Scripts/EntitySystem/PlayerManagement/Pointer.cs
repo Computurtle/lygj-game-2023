@@ -101,6 +101,8 @@ namespace LYGJ.EntitySystem.PlayerManagement {
         /// <summary> General UI. </summary>
         [Obsolete]
         UI,
+        /// <summary> Barter. </summary>
+        Barter,
         /// <summary> Inventory. </summary>
         Inventory,
         /// <summary> Dialogue. </summary>

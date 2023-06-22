@@ -109,5 +109,14 @@ namespace LYGJ.Common.Datatypes.Collections {
 
         #endregion
 
+        /// <inheritdoc cref="List{T}.Capacity"/>
+        public int Capacity {
+            get => _List.Capacity;
+            set => _List.Capacity = value;
+        }
+
+        /// <inheritdoc cref="List{T}.TrimExcess"/>
+        public void TrimExcess() => _List.TrimExcess();
+
     }
 }

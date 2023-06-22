@@ -152,10 +152,18 @@ namespace LYGJ.DialogueSystem {
                 return false;
             }
 
-            _ContinueSource.TrySetResult();
+            if (_ContinueSource.TrySetResult()) {
+                ContinueInputReceived?.Invoke();
+            }
             _ContinueSource = null!;
             return true;
         }
+
+        /// <summary> Raised when input is requested for continuing the dialogue. </summary>
+        public static event Action? ContinueInputRequested;
+
+        /// <summary> Raised when input is received for continuing the dialogue. </summary>
+        public static event Action? ContinueInputReceived;
 
         /// <summary> Waits for the user to continue the dialogue. </summary>
         /// <returns> The task to await. </returns>
@@ -166,6 +174,7 @@ namespace LYGJ.DialogueSystem {
             }
 
             _ContinueSource = new();
+            ContinueInputRequested?.Invoke();
             return _ContinueSource.Task;
         }
 
