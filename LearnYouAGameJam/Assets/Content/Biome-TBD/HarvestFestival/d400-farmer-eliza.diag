@@ -1,0 +1,22 @@
+# Dialogue for Farmer Eliza Quest 2
+
+farmer-eliza: "Well, hello there, dear. Might I inquire about your name?"
+
+> "My name is..." choice-name
+
+:choice-name
+player: "My name is [name], Mayor Pippins said I should come see you about helping out with the harvest festival."
+farmer-eliza: "Oh, I would truly appreciate your assistance in these parts. Could you kindly lend a hand by taking this watering can and tending to the field for me?"
+
+$getitem twilight-blossom-potion
+
+:getitem-success
+> "Add potion to watering can" choice-add-potion
+> "Water without potion" choice-dont-add-potion
+
+:choice-add-potion
+exit -1
+
+:getitem-failure
+:choice-dont-add-potion
+exit 1

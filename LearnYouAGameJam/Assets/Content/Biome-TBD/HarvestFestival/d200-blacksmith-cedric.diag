@@ -1,0 +1,14 @@
+# Dialogue for Blacksmith Cedric Quest 2
+
+blacksmith-cedric: "Hmph, what d'ya want, stranger? What's yer business wanderin' through these parts?"
+
+> "I am here to help" choice-help
+
+:choice-help
+player: "I am just here to help with the harvest festival, Mayor Pippins requested I go speak with Eliza at her field."
+blacksmith-cedric: "Well a friend of Pippins is a friend of mine. Just so ya know, that witch up ahead, I don't trust her, she's bad news I tell ya. Truth is, I ain't too keen on most folks 'round these parts, either."
+
+> "Thanks for the advice" choice-thanks
+
+:choice-thanks
+player: "Thanks for the advice, I’ll be sure to keep that in mind."

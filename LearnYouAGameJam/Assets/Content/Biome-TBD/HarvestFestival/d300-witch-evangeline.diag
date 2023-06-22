@@ -1,0 +1,29 @@
+# Dialogue for Witch Evangeline Quest 2
+
+witch-evangeline: "Greetings, esteemed hero, it appears you have arrived to lend your hand to the harvest festival, as I anticipated."
+
+> "How did you know?" choice-what
+
+:choice-what
+player: "Yes indee.. wait, how did you know?"
+witch-evangeline: "Ah, the secrets of this realm unfold before me like an open book. There are few things that escape my notice. Might I entice you with a potion, a concoction that bestows abundant growth and bountiful yields upon the crops? Simply add it to your watering can, and witness the wonders it unveils."
+
+> "Yes, that would be perfect!" choice-accept-potion
+> "What are the ingredients?" choice-query-potion
+
+:choice-accept-potion
+player: "Well I am just about to help Eliza with her crops, so yes, that would be perfect, thank you."
+witch-evangeline: "Ah, splendid! Take it into your possession, dear hero, and ensure its full utilisation. May its power nurture the bountiful harvest ahead."
+$additem twilight-blossom-potion 1
+exit
+
+:choice-query-potion
+player: "That sounds mighty helpful, but what are the ingredients?"
+witch-evangeline: "Behold its concoction, an intricate blend of Eye of newt, a frog leg, essence of the sun, Twilight Blossom, and fertile dirt. Such ingredients entwine in harmonious alchemy."
+
+> "Take the potion" choice-accept-potion
+> "No, thank you" choice-reject-potion
+
+:choice-reject-potion
+player: "Thanks for the offer, but I think I'll pass."
+witch-evangeline: "Foolish mortal! You have squandered a potion that could have elevated this season's harvest festival to unparalleled heights. Oh, the missed opportunity, forever lost to the winds of fate."
