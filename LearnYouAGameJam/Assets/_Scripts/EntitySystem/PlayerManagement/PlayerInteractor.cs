@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using Cysharp.Threading.Tasks;
 using LYGJ.Common;
 using Sirenix.OdinInspector;
+using Sirenix.Utilities;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 using IInteractable = LYGJ.Interactables.IInteractable;
@@ -12,19 +13,68 @@ using Object = UnityEngine.Object;
 
 namespace LYGJ.EntitySystem.PlayerManagement {
     public sealed class PlayerInteractor : MonoBehaviour {
-        [SerializeField, Tooltip("The layer for raycasting.")]                                  LayerMask               _Layer              = default;
-        [SerializeField, Tooltip("The thickness(es) of the raycast(s).")]                       float[]                 _Thicknesses        = { 0.01f, 0.03f, 0.1f, 0.2f };
-        [SerializeField, Tooltip("The maximum distance of the raycast(s).")]                    float                   _MaxDistance        = 4f;
-        [SerializeField, Tooltip("The interaction with triggers.")]                             QueryTriggerInteraction _TriggerInteraction = QueryTriggerInteraction.UseGlobal;
-        [SerializeField, Required, ChildGameObjectsOnly, Tooltip("The origin for raycast(s).")] Transform               _Origin             = null!;
+        [Title("Optimisation")]
+        [SerializeField, Tooltip("The layer for interaction detection.")] LayerMask               _Layer              = default;
+        [SerializeField, Tooltip("The interaction with triggers.")]       QueryTriggerInteraction _TriggerInteraction = QueryTriggerInteraction.UseGlobal;
 
-        [Space]
-        [SerializeField, Tooltip("The minimum time that must elapse, in seconds, between interactions.")] float _Cooldown = 0.25f;
+        const int _MaxDetected = 10; // Max amount of colliders to consider in the radius.
 
-        float _LastInteractionTime = 0f;
+        [Title("Detection")]
+        [SerializeField, Tooltip("The origin for interaction detection scans."), Required, ChildGameObjectsOnly] Transform _Origin = null!;
+        [SerializeField, Tooltip("The radius for interaction detection scans."), SuffixLabel("m")]                                 float     _Radius = 0.5f;
 
-        bool CanInteract_Cooldown()                    => !Interacting             && Time.time - _LastInteractionTime >= _Cooldown;
-        bool CanInteract( IInteractable Interactable ) => Interactable.CanInteract && CanInteract_Cooldown();
+        [Title("View Angle")]
+        [SerializeField, Tooltip("The maximum angle, in degrees, between the origin and the target."), SuffixLabel("°"), Range(0, 360)] float _MaxAngle = 90f;
+        // Priority always goes to targets in front of the origin, with second priority being distance.
+
+        [Title("Safety")]
+        [SerializeField, Tooltip("The minimum time that must elapse, in seconds, between interactions."), SuffixLabel("s"), MinValue(0)] float _Cooldown = 0.25f;
+
+        /// <summary> Ranks the given components by their suitability for interaction. </summary>
+        /// <param name="Options"> The options to rank. </param>
+        /// <param name="Count"> The amount of options to rank. </param>
+        /// <param name="Predicate"> The predicate to use for determining if an option is valid. </param>
+        /// <param name="Sorter"> The sorter to use for ranking. </param>
+        /// <param name="Source"> The source transform to use for ranking. </param>
+        /// <param name="MaxAngle"> The maximum angle, in degrees, between the origin and the target. </param>
+        /// <param name="MaxDistance"> The maximum distance, in metres, between the origin and the target. </param>
+        /// <typeparam name="TComponent"> The type of component to rank. </typeparam>
+        /// <returns> The ranked options. </returns>
+        static IList<TComponent> Rank<TComponent>( IEnumerable<TComponent?> Options, int Count, Func<TComponent, bool> Predicate, SortedList<float, TComponent> Sorter, Transform Source, float MaxAngle, float MaxDistance ) where TComponent : Component {
+            switch (Count) {
+                case 0:
+                    return Array.Empty<TComponent>();
+                default:
+                    Vector3 Origin = Source.position, Direction = Source.forward;
+                    Sorter.Clear();
+                    // Ensure sorter has enough capacity.
+                    if (Sorter.Capacity < Count) {
+                        Sorter.Capacity = Count;
+                    }
+
+                    foreach (TComponent? Option in Options) {
+                        if (!Predicate(Option!)) {
+                            continue;
+                        }
+
+                        Vector3 ToTarget = Option!.transform.position - Origin;
+                        float   Angle    = Vector3.Angle(Direction, ToTarget);
+                        if (Angle > MaxAngle) {
+                            continue;
+                        }
+
+                        float SqrDistance = ToTarget.sqrMagnitude;
+                        // Key favours view angle over distance.
+                        float Key = Angle + SqrDistance / MaxDistance;
+                        Sorter.Add(Key, Option);
+                    }
+                    return Sorter.Values;
+            }
+        }
+
+        float _CooldownRemaining = 0f;
+
+        bool CanInteract( IInteractable Interactable ) => Interactable.CanInteract && !Interacting && _CooldownRemaining <= 0f;
 
         /// <summary> Gets whether the hero is currently interacting. </summary>
         [ShowInInspector, ReadOnly, HideInEditorMode, Tooltip("Whether the hero is currently interacting.")] public bool Interacting { get; private set; } = false;
@@ -43,8 +93,8 @@ namespace LYGJ.EntitySystem.PlayerManagement {
                     Debug.LogException(Ex, Interactable as Object);
                 }
 
-                Interacting          = false;
-                _LastInteractionTime = Time.time;
+                Interacting        = false;
+                _CooldownRemaining = _Cooldown;
             }
 
             Perform().Forget();
@@ -57,19 +107,7 @@ namespace LYGJ.EntitySystem.PlayerManagement {
         }
         #endif
 
-        static bool Thickcast( Vector3 Origin, Vector3 Direction, float MaxDistance, out RaycastHit Hit, int Layer, IEnumerable<float> Thicknesses, QueryTriggerInteraction TriggerInteraction = QueryTriggerInteraction.UseGlobal ) {
-            if (Physics.Raycast(Origin, Direction, out Hit, MaxDistance, Layer, TriggerInteraction)) {
-                return true;
-            }
-
-            foreach (float Thickness in Thicknesses) {
-                if (Physics.SphereCast(Origin, Thickness, Direction, out Hit, MaxDistance, Layer, TriggerInteraction)) {
-                    return true;
-                }
-            }
-
-            return false;
-        }
+        readonly Collider?[] _Detected = new Collider?[_MaxDetected];
 
         #if UNITY_EDITOR
         void OnDrawGizmosSelected() {
@@ -77,41 +115,121 @@ namespace LYGJ.EntitySystem.PlayerManagement {
                 return;
             }
 
-            static bool IsValidHit( RaycastHit HitInfo ) => TryGetComponentInParent<IInteractable>(HitInfo.collider, out _);
+            int Count = Scan();
+            // Set colour:
+            // - Red if no interactable detected,
+            // - Yellow if interactable detected but not valid,
+            // - Green if interactable detected and valid;
+            // - Cyan for non-primary valid interactable,
+            // - Magenta for non-primary invalid interactable.
+            Vector3 Orig = _Origin.position;
+            for (int I = 0; I < Count; I++) {
+                Collider? Collider = _Detected[I];
+                if (Collider == null) {
+                    continue;
+                }
 
-            static void DrawCapsule( Vector3 Start, Vector3 End, float Radius ) {
-                Gizmos.DrawWireSphere(Start, Radius);
-                Gizmos.DrawWireSphere(End, Radius);
-
-                Gizmos.DrawLine(Start + Vector3.up    * Radius, End + Vector3.up    * Radius);
-                Gizmos.DrawLine(Start + Vector3.down  * Radius, End + Vector3.down  * Radius);
-                Gizmos.DrawLine(Start + Vector3.left  * Radius, End + Vector3.left  * Radius);
-                Gizmos.DrawLine(Start + Vector3.right * Radius, End + Vector3.right * Radius);
+                bool Valid = IsValid(Collider);
+                Gizmos.color = Valid ? (I == 0 ? Color.green : Color.cyan) : (I == 0 ? Color.red : Color.magenta);
+                Vector3 End = Collider.transform.position;
+                Gizmos.DrawWireSphere(End, _Radius);
+                Gizmos.DrawLine(Orig, End);
             }
 
-            Vector3
-                Origin    = _Origin.position,
-                Direction = _Origin.forward,
-                End       = Origin + Direction * _MaxDistance;
-
-            int  Lyr = _Layer;
-            bool Hit = Physics.Raycast(Origin, Direction, out RaycastHit HitInfo, _MaxDistance, Lyr, _TriggerInteraction);
-            Gizmos.color = Hit ? IsValidHit(HitInfo) ? Color.green : Color.yellow : Color.red;
-            Gizmos.DrawLine(Origin, Hit ? HitInfo.point : End);
-            if (Hit) { return; }
-
-            foreach (float Thickness in _Thicknesses) {
-                Hit          = Physics.SphereCast(_Origin.position, Thickness, _Origin.forward, out HitInfo, _MaxDistance, Lyr);
-                Gizmos.color = Hit ? IsValidHit(HitInfo) ? Color.green : Color.yellow : Color.red;
-                DrawCapsule(_Origin.position, Hit ? HitInfo.point : End, Thickness);
-                if (Hit) { return; }
-            }
+            Gizmos.color = Color.white;
+            Gizmos.DrawWireSphere(Orig, _Radius);
         }
         #endif
 
-        (Collider Collider, IInteractable Interactable)? _Last;
+        public readonly struct CachedInteractable : IEquatable<CachedInteractable> {
+            /// <summary> The interactable component. </summary>
+            /// <remarks> This is not necessarily on the same transform as the collider. This is the first parent transform with an interactable component. </remarks>
+            public readonly IInteractable? Interactable;
 
-        static bool TryGetComponentInParent<TComponent>( Component Source, [NotNullWhen(true)] out TComponent? Component ) {
+            /// <summary> The collider of the interactable component. </summary>
+            /// <remarks> This is not necessarily on the same transform as the interactable component. This is the child from which the detection originated. </remarks>
+            public readonly Collider? Collider;
+
+            public CachedInteractable( IInteractable Interactable, Collider Collider ) {
+                this.Interactable = Interactable;
+                this.Collider     = Collider;
+            }
+
+            /// <summary> Whether the interactable is in an invalid state (i.e. either the interactable or collider (or both) is null). </summary>
+            [MemberNotNullWhen(false, nameof(Interactable), nameof(Collider))]
+            public bool InvalidState => Interactable == null || Collider == null;
+
+            /// <summary> Highlights the interactable. </summary>
+            public void Highlight() {
+                switch (Interactable) {
+                    case null:
+                        Debug.LogWarning("Cannot highlight null interactable!");
+                        return;
+                    case Component Component:
+                        Component.gameObject.AddOutline(OutlineStyle.Interactable);
+                        break;
+                    default:
+                        Debug.LogWarning($"Cannot highlight interactable of type {Interactable.GetType().GetNiceName()}!", Collider);
+                        break;
+                }
+            }
+
+            /// <summary> Un-highlights the interactable. </summary>
+            public void Unhighlight() {
+                switch (Interactable) {
+                    case null: // Nothing to un-highlight.
+                        return;
+                    case Component Component:
+                        Component.gameObject.RemoveOutline();
+                        break;
+                    default:
+                        Debug.LogWarning($"Cannot un-highlight interactable of type {Interactable.GetType().GetNiceName()}!", Collider);
+                        break;
+                }
+            }
+
+            /// <summary> Attempts to find the interactable component on the collider. </summary>
+            /// <param name="Source"> The collider to search. </param>
+            /// <param name="Found"> The found interactable, if any. </param>
+            /// <returns> <see langword="true"/> if an interactable was found, otherwise <see langword="false"/>. </returns>
+            public static bool TryGetInteractable( Collider Source, [NotNullWhen(true)] out CachedInteractable? Found ) {
+                if (TryGetComponentInParent(Source, out IInteractable? Interactable)) {
+                    Found = new CachedInteractable(Interactable, Source);
+                    return true;
+                }
+
+                Found = null;
+                return false;
+            }
+
+            #region Equality Members
+
+            /// <inheritdoc />
+            public bool Equals( CachedInteractable Other ) =>
+                EqualityComparer<Collider?>.Default.Equals(Collider, Other.Collider)
+                || EqualityComparer<IInteractable?>.Default.Equals(Interactable, Other.Interactable);
+
+            /// <inheritdoc />
+            public override bool Equals( object? Obj ) => Obj is CachedInteractable Other && Equals(Other);
+
+            /// <inheritdoc />
+            public override int GetHashCode() => Collider != null ? Collider.GetHashCode() : 0;
+
+            public static bool operator ==( CachedInteractable Left, CachedInteractable Right ) => Left.Equals(Right);
+            public static bool operator !=( CachedInteractable Left, CachedInteractable Right ) => !Left.Equals(Right);
+
+            #endregion
+
+        }
+
+        CachedInteractable? _Last;
+
+        static bool TryGetComponentInParent<TComponent>( Component? Source, [NotNullWhen(true)] out TComponent? Component ) {
+            if (Source == null) {
+                Component = default;
+                return false;
+            }
+
             Transform? Parent = Source.transform;
             while (Parent != null) {
                 if (Parent.TryGetComponent<TComponent>(out Component)) {
@@ -127,52 +245,97 @@ namespace LYGJ.EntitySystem.PlayerManagement {
             return false;
         }
 
-        void Update() {
-            if (!CanInteract_Cooldown()) {
-                if (_Last is { } L) {
-                    ((Component)L.Interactable).gameObject.RemoveOutline();
+        int Scan() {
+            int Count = Physics.OverlapSphereNonAlloc(_Origin.position, _Radius, _Detected, _Layer, _TriggerInteraction);
+            for (int I = 0; I < Count; I++) {
+                if (CachedInteractable.TryGetInteractable(_Detected[I]!, out CachedInteractable? Interactable)) {
+                    _Detected[I] = Interactable.Value.Collider;
+                } else {
+                    _Detected[I] = null;
                 }
+            }
 
-                _Last = null;
+            return Count;
+        }
+
+        readonly SortedList<float, Collider> _Ranker = new(_MaxDetected);
+
+        static bool IsValid( Collider Collider ) {
+            if (!TryGetComponentInParent(Collider, out IInteractable? Interactable)) {
+                return false;
+            }
+
+            return Interactable.CanInteract;
+        }
+
+        void Update() {
+            if (_CooldownRemaining > 0f) {
+                _CooldownRemaining -= Time.deltaTime;
+                ClearLast();
                 return;
             }
 
-            Collider? New = Thickcast(_Origin.position, _Origin.forward, _MaxDistance, out RaycastHit Hit, _Layer, _Thicknesses, _TriggerInteraction) ? Hit.collider : null;
-            if (New != null) {
-                if (_Last is { } L && L.Collider != New) {
-                    ((Component)L.Interactable).gameObject.RemoveOutline();
-                    _Last = null;
-                }
+            if (Interacting) {
+                ClearLast();
+                return;
+            }
 
-                if (!TryGetComponentInParent(New, out IInteractable? Interactable)) {
+            { // Cleanup _Last if invalid (e.g. any part destroyed)
+                ClearLast();
+            }
+
+            // Scan for interactables
+            int Count = Scan();
+            if (Count == 0) { // No interactables found, so un-highlight the last interactable (if any)
+                ClearLast();
+                return;
+            }
+
+            // Find the closest interactable. If not the same as _Last, un-highlight _Last and highlight the new interactable.
+            // Use the Rank method to determine the closest interactable.
+            IEnumerable<Collider> Closest = Rank(_Detected, Count, IsValid, _Ranker, _Origin, _MaxAngle, _Radius);
+            bool AnyFound = false;
+            foreach (Collider Collider in Closest) {
+                if (CachedInteractable.TryGetInteractable(Collider, out CachedInteractable? Interactable)) {
+                    if (Interactable == _Last) {
+                        return;
+                    }
+                    AnyFound = true;
+
+                    ClearLast();
+
+                    Interactable.Value.Highlight();
+                    _Last = Interactable;
                     return;
                 }
-
-                if (CanInteract(Interactable)) {
-                    Component Cmp = (Component)Interactable;
-                    Cmp.gameObject.AddOutline(OutlineStyle.Interactable);
-                    _Last = (New, Interactable);
-                }
-            } else if (_Last is { } L) {
-                ((Component)L.Interactable).gameObject.RemoveOutline();
-                _Last = null;
             }
+
+            { // If no interactable was found, un-highlight _Last (if any)
+                if (!AnyFound) {
+                    ClearLast();
+                }
+            }
+
+        }
+
+        void ClearLast() {
+            if (_Last is { } L) {
+                L.Unhighlight();
+            }
+
+            _Last = null;
         }
 
         void Start() => PlayerInput.Interact.Pressed += OnInteractPressed;
 
         void OnInteractPressed() {
             if (_Last is { } L) {
-                if (!TryGetComponentInParent(L.Collider, out IInteractable? Interactable)) {
+                if (L.InvalidState) {
+                    ClearLast();
                     return;
                 }
 
-                if (Interactable is Component C) {
-                    C.gameObject.RemoveOutline();
-                }
-
-                _Last = null;
-                Interact(Interactable);
+                Interact(L.Interactable);
             }
         }
     }

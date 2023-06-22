@@ -38,9 +38,6 @@ namespace LYGJ.EntitySystem.PlayerManagement {
         /// <summary> The 'pause' input. </summary>
         public static InputButton Pause { get; private set; } = null!;
 
-        /// <summary> The 'rotate item' input. </summary>
-        public static InputFloat RotateItem { get; private set; } = null!;
-
         /// <summary> The 'dialogue continue' input. </summary>
         public static InputButton DialogueContinue { get; private set; } = null!;
 
@@ -71,7 +68,6 @@ namespace LYGJ.EntitySystem.PlayerManagement {
                 Jump             = new(Asset.FindAction("Jump", true)),
                 MousePosition    = new(Asset.FindAction("Mouse Position", true)),
                 Pause            = new(Asset.FindAction("Pause", true)),
-                RotateItem       = new(Asset.FindAction("Rotate Item", true)),
                 DialogueContinue = new(Asset.FindAction("Dialogue Continue", true)),
                 SwitchCamera     = new(Asset.FindAction("Switch Camera", true)),
                 Inventory        = new(Asset.FindAction("Inventory", true)),

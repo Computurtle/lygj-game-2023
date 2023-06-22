@@ -1,5 +1,5 @@
 {
-    "name": "The Deliverer",
+    "name": "LearnYouAGameJam",
     "maps": [
         {
             "name": "Player",
@@ -85,15 +85,6 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
-                },
-                {
-                    "name": "Rotate Item",
-                    "type": "Value",
-                    "id": "b443f5b8-2b2d-4cf8-a198-57862c1c7139",
-                    "expectedControlType": "Axis",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": true
                 },
                 {
                     "name": "Dialogue Continue",
@@ -442,39 +433,6 @@
                     "action": "Mouse Position",
                     "isComposite": false,
                     "isPartOfComposite": false
-                },
-                {
-                    "name": "Q/E [Keyboard]",
-                    "id": "001335a9-4397-410d-96f0-00964e2a5c53",
-                    "path": "1DAxis",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Rotate Item",
-                    "isComposite": true,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "negative",
-                    "id": "2b192e6c-dd9c-42b0-a1be-65a95b8dd95a",
-                    "path": "<Keyboard>/q",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Keyboard&Mouse",
-                    "action": "Rotate Item",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
-                    "name": "positive",
-                    "id": "3d261376-de1f-4d0f-a822-f2ccec176eeb",
-                    "path": "<Keyboard>/e",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Keyboard&Mouse",
-                    "action": "Rotate Item",
-                    "isComposite": false,
-                    "isPartOfComposite": true
                 },
                 {
                     "name": "",

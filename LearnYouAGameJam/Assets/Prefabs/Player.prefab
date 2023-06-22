@@ -419,14 +419,10 @@ MonoBehaviour:
   _Layer:
     serializedVersion: 2
     m_Bits: 64
-  _Thicknesses:
-  - 0.01
-  - 0.03
-  - 0.1
-  - 0.2
-  _MaxDistance: 1.5
   _TriggerInteraction: 2
   _Origin: {fileID: 1813280210565229996}
+  _Radius: 3
+  _MaxAngle: 45
   _Cooldown: 0.25
 --- !u!114 &1813280211023920302
 MonoBehaviour:
@@ -579,6 +575,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b6ee0a55a4134e5494f043cee5948125, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _OnItemAdded:
+    m_PersistentCalls:
+      m_Calls: []
+  _OnItemRemoved:
+    m_PersistentCalls:
+      m_Calls: []
+  _OnInventoryCleared:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &1813280211032281841
 GameObject:
   m_ObjectHideFlags: 0
