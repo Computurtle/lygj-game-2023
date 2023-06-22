@@ -141,6 +141,18 @@ namespace LYGJ {
         /// <summary> Gets the transform of the current camera. </summary>
         /// <returns> The transform of the current camera. </returns>
         public static Transform Transform => Instance.CurrentCamera != null ? Instance.CurrentCamera.transform : null!;
+
+        /// <summary> Gets the forward direction of the current camera. </summary>
+        /// <returns> The forward direction of the current camera. </returns>
+        public static Vector3 Forward => Instance.CurrentCamera != null ? Instance.CurrentCamera.transform.forward : Vector3.forward;
+
+        /// <summary> Gets the right direction of the current camera. </summary>
+        /// <returns> The right direction of the current camera. </returns>
+        public static Vector3 Right => Instance.CurrentCamera != null ? Instance.CurrentCamera.transform.right : Vector3.right;
+
+        /// <summary> Gets the up direction of the current camera. </summary>
+        /// <returns> The up direction of the current camera. </returns>
+        public static Vector3 Up => Instance.CurrentCamera != null ? Instance.CurrentCamera.transform.up : Vector3.up;
     }
 
     public static class CameraExtensions {

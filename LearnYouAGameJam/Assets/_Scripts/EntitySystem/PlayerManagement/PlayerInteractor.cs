@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Cysharp.Threading.Tasks;
 using LYGJ.Common;
 using LYGJ.Common.Datatypes.Collections;
@@ -25,7 +26,14 @@ namespace LYGJ.EntitySystem.PlayerManagement {
         [SerializeField, Tooltip("The radius for interaction detection scans."), SuffixLabel("m")] float _Radius = 0.5f;
 
         [Title("View Angle")]
-        [SerializeField, Tooltip("The maximum angle, in degrees, between the origin and the target."), SuffixLabel("°"), Range(0, 360)] float _MaxAngle = 90f;
+        [ShowInInspector, SuffixLabel("°"), PropertyRange(0, 360),
+         PropertyTooltip("@\"The maximum horizontal angle, in degrees, between the origin and the target.\\n\\nDegrees: \" + (" + nameof(_MaxAzimuth) + ").ToString(\"N0\") + \"°\\nRadians: \" + (" + nameof(_MaxAzimuth) + " * Mathf.Deg2Rad).ToString(\"N2\") + \"㎭\"")]
+        float MaxAzimuth {
+            get => _MaxAzimuth * Mathf.Rad2Deg;
+            set => _MaxAzimuth = value * Mathf.Deg2Rad;
+        }
+        [SerializeField, HideInInspector] float _MaxAzimuth = 45f * Mathf.Deg2Rad;
+
         // Priority always goes to targets in front of the origin, with second priority being distance.
 
         [Title("Safety")]
@@ -42,45 +50,89 @@ namespace LYGJ.EntitySystem.PlayerManagement {
         /// <param name="Priority"> The priority of the override. </param>
         public static void ClearCanInteract( InteractionPriority Priority ) => Instance._CanInteractPriority.RemoveOverride(Priority);
 
-        /// <summary> Ranks the given components by their suitability for interaction. </summary>
-        /// <param name="Options"> The options to rank. </param>
-        /// <param name="Count"> The amount of options to rank. </param>
-        /// <param name="Predicate"> The predicate to use for determining if an option is valid. </param>
-        /// <param name="Sorter"> The sorter to use for ranking. </param>
-        /// <param name="Source"> The source transform to use for ranking. </param>
-        /// <param name="MaxAngle"> The maximum angle, in degrees, between the origin and the target. </param>
-        /// <param name="MaxDistance"> The maximum distance, in metres, between the origin and the target. </param>
-        /// <typeparam name="TComponent"> The type of component to rank. </typeparam>
-        /// <returns> The ranked options. </returns>
-        static IList<TComponent> Rank<TComponent>( IEnumerable<TComponent?> Options, int Count, Func<TComponent, bool> Predicate, SortedList<float, TComponent> Sorter, Transform Source, float MaxAngle, float MaxDistance ) where TComponent : Component {
+        /// <summary> Ranks the colliders and their interactable components by their suitability for interaction. </summary>
+        /// <param name="Colliders"> The colliders to rank. </param>
+        /// <param name="Count"> The amount of colliders to rank. </param>
+        /// <param name="Sorter"> The sorter to use for ranking. Used to avoid memory allocations. </param>
+        /// <param name="Origin"> The origin of the interaction detection. </param>
+        /// <param name="Forward"> The forward direction of the interaction detection. </param>
+        /// <param name="MaxAzimuthRad"> The maximum horizontal angle, in radians, between the origin and the target. </param>
+        /// <param name="MaxDist"> The maximum distance, in metres, between the origin and the target. </param>
+        /// <returns> The ranked colliders and their interactable components. </returns>
+        static IEnumerable<CachedInteractable> Rank( IEnumerable<Collider?> Colliders, int Count, PostSortList<float, CachedInteractable> Sorter, Vector3 Origin, Vector3 Forward, float MaxDist, float MaxAzimuthRad ) {
             switch (Count) {
-                case 0:
-                    return Array.Empty<TComponent>();
-                default:
-                    Vector3 Origin = Source.position, Direction = Source.forward;
+                case 0: {
+                    yield break;
+                }
+                case 1: {
+                    Collider? Option = Colliders.FirstOrDefault();
+                    if (Option != null
+                        && WithinView(Origin, Forward, Option.transform.position, MaxDist, MaxAzimuthRad, out _, out _)
+                        && CachedInteractable.TryGet(Option, out CachedInteractable? Found)
+                        && Found.Value.Interactable!.CanInteract) {
+                        yield return Found.Value;
+                    }
+                    break;
+                }
+                default: {
                     Sorter.Clear();
-                    // Ensure sorter has enough capacity.
                     if (Sorter.Capacity < Count) {
                         Sorter.Capacity = Count;
                     }
 
-                    foreach (TComponent? Option in Options) {
-                        if (!Predicate(Option!)) {
+                    int I = 0;
+                    foreach (Collider? Collider in Colliders) {
+                        if (I >= Count) {
+                            break;
+                        }
+                        if (Collider == null) {
+                            // Debug.LogWarning($"{I} - Null component in {nameof(Colliders)}.");
                             continue;
                         }
 
-                        Vector3 ToTarget = Option!.transform.position - Origin;
-                        float   Angle    = Vector3.Angle(Direction, ToTarget);
-                        if (Angle > MaxAngle) {
-                            continue;
-                        }
+                        if (WithinView(Origin, Forward, Collider.transform.position, MaxDist, MaxAzimuthRad, out float HorAngle, out float DistRel)
+                            && CachedInteractable.TryGet(Collider, out CachedInteractable? Found)
+                            && Found.Value.Interactable!.CanInteract) {
+                            float SortingKey = GetSortingKey(HorAngle, DistRel);
+                            // Debug.Log($"{I} - SortingKey of '{Collider.name}': {SortingKey} (HorAngle: {HorAngle}, DistRel: {DistRel})");
+                            Sorter.Add(SortingKey, Found.Value);
+                        } /* else {
+                            Debug.Log($"{I} - '{Collider.name}' is not within view.");
+                        }*/
 
-                        float SqrDistance = ToTarget.sqrMagnitude;
-                        // Key favours view angle over distance.
-                        float Key = Angle + SqrDistance / MaxDistance;
-                        Sorter.Add(Key, Option);
+                        I++;
                     }
-                    return Sorter.Values;
+
+                    // Extract the sorted components from the ItemList
+                    foreach ((_, CachedInteractable Interactable) in Sorter) {
+                        yield return Interactable;
+                    }
+                    break;
+                }
+            }
+
+            static float GetSortingKey( float HorAngle, float DistRel ) => HorAngle + DistRel;
+
+            static bool WithinView( Vector3 Origin, Vector3 Forward, Vector3 TargetPos, float MaxDist, float MaxAzimuthRad, out float Azimuth, out float DistRel ) {
+                Vector3 Dir = TargetPos - Origin;
+
+                // Debug.Log($"Distance: {Dir.magnitude}/{MaxDist} (={Dir.magnitude / MaxDist:P0}), Azimuth: {Mathf.Abs(Mathf.Acos(Vector3.Dot(Forward, Dir.normalized)) * Mathf.Rad2Deg)}/{MaxAzimuthRad * Mathf.Rad2Deg} (={Mathf.Abs(Mathf.Acos(Vector3.Dot(Forward, Dir.normalized))) / MaxAzimuthRad:P0})");
+
+                float Dist = Dir.magnitude;
+                if (Dist > MaxDist) {
+                    Azimuth = 0f;
+                    DistRel = 0f;
+                    return false;
+                }
+
+                Azimuth = Mathf.Acos(Vector3.Dot(Forward, Dir.normalized));
+                if (Mathf.Abs(Azimuth) > MaxAzimuthRad) {
+                    DistRel = 0f;
+                    return false;
+                }
+
+                DistRel = Dist / MaxDist;
+                return true;
             }
         }
 
@@ -137,6 +189,52 @@ namespace LYGJ.EntitySystem.PlayerManagement {
                 return;
             }
 
+            if (Application.isPlaying) {
+                Transform Tr = Cameras.Transform;
+                Vector3     Pos      = Tr.position;
+                const float AxisSize = 1f, PointRadii = 0.1f;
+
+                Gizmos.color = Color.red;
+                Vector3 R = (Pos + Tr.right) * AxisSize;
+                Gizmos.DrawLine(Pos, R);
+                Gizmos.DrawSphere(R, PointRadii);
+                Gizmos.color = Color.green;
+                Vector3 U = (Pos + Tr.up) * AxisSize;
+                Gizmos.DrawLine(Pos, U);
+                Gizmos.DrawSphere(U, PointRadii);
+                Gizmos.color = Color.blue;
+                Vector3 F = (Pos + Tr.forward) * AxisSize;
+                Gizmos.DrawLine(Pos, F);
+                Gizmos.DrawSphere(F, PointRadii);
+            }
+
+            static void DrawFrustum( Vector3 Origin, Vector3 Forward, float Distance, float HorAngleRad, float VerAngleRad ) {
+                float HorAngle = Mathf.Tan(HorAngleRad);
+                float VerAngle = Mathf.Tan(VerAngleRad);
+
+                Vector3 Right = Vector3.Cross(Vector3.up, Forward).normalized;
+                Vector3 Up    = Vector3.Cross(Forward, Right).normalized;
+
+                Vector3 TopLeft     = Origin + Forward * Distance + (Right * HorAngle + Up * VerAngle) * Distance;
+                Vector3 TopRight    = Origin + Forward * Distance + (Right * HorAngle - Up * VerAngle) * Distance;
+                Vector3 BottomLeft  = Origin + Forward * Distance + (-Right * HorAngle + Up * VerAngle) * Distance;
+                Vector3 BottomRight = Origin + Forward * Distance + (-Right * HorAngle - Up * VerAngle) * Distance;
+
+                Gizmos.DrawLine(Origin, TopLeft);
+                Gizmos.DrawLine(Origin, TopRight);
+                Gizmos.DrawLine(Origin, BottomLeft);
+                Gizmos.DrawLine(Origin, BottomRight);
+
+                Gizmos.DrawLine(TopLeft, TopRight);
+                Gizmos.DrawLine(TopRight, BottomRight);
+                Gizmos.DrawLine(BottomRight, BottomLeft);
+                Gizmos.DrawLine(BottomLeft, TopLeft);
+            }
+            Vector3 Orig = _Origin.position;
+            Gizmos.color = Color.cyan;
+            DrawFrustum(Orig, _Origin.forward, _Radius, _MaxAzimuth, 90f);
+            Gizmos.DrawWireSphere(Orig, _Radius);
+
             int Count = Scan();
             // Set colour:
             // - Red if no interactable detected,
@@ -144,22 +242,18 @@ namespace LYGJ.EntitySystem.PlayerManagement {
             // - Green if interactable detected and valid;
             // - Cyan for non-primary valid interactable,
             // - Magenta for non-primary invalid interactable.
-            Vector3 Orig = _Origin.position;
             for (int I = 0; I < Count; I++) {
                 Collider? Collider = _Detected[I];
                 if (Collider == null) {
                     continue;
                 }
 
-                bool Valid = IsValid(Collider);
+                bool Valid = TryGetComponentInParent<IInteractable>(Collider, out _);
                 Gizmos.color = Valid ? (I == 0 ? Color.green : Color.cyan) : (I == 0 ? Color.red : Color.magenta);
                 Vector3 End = Collider.transform.position;
                 Gizmos.DrawWireSphere(End, _Radius);
                 Gizmos.DrawLine(Orig, End);
             }
-
-            Gizmos.color = Color.white;
-            Gizmos.DrawWireSphere(Orig, _Radius);
         }
         #endif
 
@@ -214,7 +308,7 @@ namespace LYGJ.EntitySystem.PlayerManagement {
             /// <param name="Source"> The collider to search. </param>
             /// <param name="Found"> The found interactable, if any. </param>
             /// <returns> <see langword="true"/> if an interactable was found, otherwise <see langword="false"/>. </returns>
-            public static bool TryGetInteractable( Collider Source, [NotNullWhen(true)] out CachedInteractable? Found ) {
+            public static bool TryGet( Collider Source, [NotNullWhen(true)] out CachedInteractable? Found ) {
                 if (TryGetComponentInParent(Source, out IInteractable? Interactable)) {
                     Found = new CachedInteractable(Interactable, Source);
                     return true;
@@ -270,7 +364,7 @@ namespace LYGJ.EntitySystem.PlayerManagement {
         int Scan() {
             int Count = Physics.OverlapSphereNonAlloc(_Origin.position, _Radius, _Detected, _Layer, _TriggerInteraction);
             for (int I = 0; I < Count; I++) {
-                if (CachedInteractable.TryGetInteractable(_Detected[I]!, out CachedInteractable? Interactable)) {
+                if (CachedInteractable.TryGet(_Detected[I]!, out CachedInteractable? Interactable)) {
                     _Detected[I] = Interactable.Value.Collider;
                 } else {
                     _Detected[I] = null;
@@ -280,15 +374,7 @@ namespace LYGJ.EntitySystem.PlayerManagement {
             return Count;
         }
 
-        readonly SortedList<float, Collider> _Ranker = new(_MaxDetected);
-
-        static bool IsValid( Collider Collider ) {
-            if (!TryGetComponentInParent(Collider, out IInteractable? Interactable)) {
-                return false;
-            }
-
-            return Interactable.CanInteract;
-        }
+        readonly PostSortList<float, CachedInteractable> _Ranker = new(_MaxDetected);
 
         void Update() {
             if (_CooldownRemaining > 0f) {
@@ -317,21 +403,19 @@ namespace LYGJ.EntitySystem.PlayerManagement {
 
             // Find the closest interactable. If not the same as _Last, un-highlight _Last and highlight the new interactable.
             // Use the Rank method to determine the closest interactable.
-            IEnumerable<Collider> Closest = Rank(_Detected, Count, IsValid, _Ranker, _Origin, _MaxAngle, _Radius);
-            bool AnyFound = false;
-            foreach (Collider Collider in Closest) {
-                if (CachedInteractable.TryGetInteractable(Collider, out CachedInteractable? Interactable)) {
-                    if (Interactable == _Last) {
-                        return;
-                    }
-                    AnyFound = true;
-
-                    ClearLast();
-
-                    Interactable.Value.Highlight();
-                    _Last = Interactable;
+            IEnumerable<CachedInteractable> Closest  = Rank(_Detected, Count, _Ranker, _Origin.position, Cameras.Forward, _Radius, _MaxAzimuth);
+            bool             AnyFound = false;
+            foreach (CachedInteractable Interactable in Closest) {
+                if (Interactable == _Last) {
                     return;
                 }
+                AnyFound = true;
+
+                ClearLast();
+
+                Interactable.Highlight();
+                _Last = Interactable;
+                return;
             }
 
             { // If no interactable was found, un-highlight _Last (if any)

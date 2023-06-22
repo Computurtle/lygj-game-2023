@@ -329,6 +329,11 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1813280211023920301, guid: 701d5f61df74f044ba1389d93ee8b0a4,
+        type: 3}
+      propertyPath: _MaxElevation
+      value: 0.7853982
+      objectReference: {fileID: 0}
     - target: {fileID: 1813280211023920303, guid: 701d5f61df74f044ba1389d93ee8b0a4,
         type: 3}
       propertyPath: m_Name
@@ -733,6 +738,43 @@ RenderTexture:
   m_Dimension: 2
   m_VolumeDepth: 1
   m_ShadowSamplingMode: 2
+--- !u!84 &868925894
+RenderTexture:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  m_ImageContentsHash:
+    serializedVersion: 2
+    Hash: 00000000000000000000000000000000
+  m_ForcedFallbackFormat: 4
+  m_DownscaleFallback: 0
+  m_IsAlphaChannelOptional: 0
+  serializedVersion: 5
+  m_Width: 256
+  m_Height: 144
+  m_AntiAliasing: 1
+  m_MipCount: -1
+  m_DepthStencilFormat: 0
+  m_ColorFormat: 4
+  m_MipMap: 0
+  m_GenerateMips: 1
+  m_SRGB: 1
+  m_UseDynamicScale: 0
+  m_BindMS: 0
+  m_EnableCompatibleFormat: 1
+  m_TextureSettings:
+    serializedVersion: 2
+    m_FilterMode: 0
+    m_Aniso: 1
+    m_MipBias: 0
+    m_WrapU: 1
+    m_WrapV: 1
+    m_WrapW: 1
+  m_Dimension: 2
+  m_VolumeDepth: 1
+  m_ShadowSamplingMode: 2
 --- !u!1 &1261514432
 GameObject:
   m_ObjectHideFlags: 0
@@ -945,43 +987,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 9
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!84 &1408960669
-RenderTexture:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: 
-  m_ImageContentsHash:
-    serializedVersion: 2
-    Hash: 00000000000000000000000000000000
-  m_ForcedFallbackFormat: 4
-  m_DownscaleFallback: 0
-  m_IsAlphaChannelOptional: 0
-  serializedVersion: 5
-  m_Width: 256
-  m_Height: 144
-  m_AntiAliasing: 1
-  m_MipCount: -1
-  m_DepthStencilFormat: 0
-  m_ColorFormat: 4
-  m_MipMap: 0
-  m_GenerateMips: 1
-  m_SRGB: 1
-  m_UseDynamicScale: 0
-  m_BindMS: 0
-  m_EnableCompatibleFormat: 1
-  m_TextureSettings:
-    serializedVersion: 2
-    m_FilterMode: 0
-    m_Aniso: 1
-    m_MipBias: 0
-    m_WrapU: 1
-    m_WrapV: 1
-    m_WrapW: 1
-  m_Dimension: 2
-  m_VolumeDepth: 1
-  m_ShadowSamplingMode: 2
 --- !u!1 &1492841622
 GameObject:
   m_ObjectHideFlags: 0
@@ -4462,12 +4467,12 @@ PrefabInstance:
     - target: {fileID: 2809019015333074213, guid: ff04d7df4dd2cd047906b09d0d24ace6,
         type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.1900169
+      value: 0.19001691
       objectReference: {fileID: 0}
     - target: {fileID: 2809019015333074213, guid: ff04d7df4dd2cd047906b09d0d24ace6,
         type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0.03194505
+      value: 0.03194506
       objectReference: {fileID: 0}
     - target: {fileID: 2809019015333074213, guid: ff04d7df4dd2cd047906b09d0d24ace6,
         type: 3}
@@ -4858,12 +4863,12 @@ PrefabInstance:
     - target: {fileID: 2855008759598466605, guid: a56328168401e414e88ca2938a07b1bf,
         type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.24719605
+      value: 0.24719602
       objectReference: {fileID: 0}
     - target: {fileID: 2855008759598466605, guid: a56328168401e414e88ca2938a07b1bf,
         type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0.03197262
+      value: 0.03197261
       objectReference: {fileID: 0}
     - target: {fileID: 2855008759598466605, guid: a56328168401e414e88ca2938a07b1bf,
         type: 3}
@@ -4873,7 +4878,7 @@ PrefabInstance:
     - target: {fileID: 2855008759598466605, guid: a56328168401e414e88ca2938a07b1bf,
         type: 3}
       propertyPath: m_LocalRotation.z
-      value: -0.12422411
+      value: -0.12422408
       objectReference: {fileID: 0}
     - target: {fileID: 3883353545116888005, guid: a56328168401e414e88ca2938a07b1bf,
         type: 3}
@@ -5104,7 +5109,7 @@ PrefabInstance:
         type: 3}
       propertyPath: m_TargetTexture
       value: 
-      objectReference: {fileID: 1408960669}
+      objectReference: {fileID: 868925894}
     - target: {fileID: 8998190963896585241, guid: f042020630ab0da4fac0a77538601445,
         type: 3}
       propertyPath: near clip plane
@@ -5201,12 +5206,12 @@ PrefabInstance:
     - target: {fileID: 1673345483648933120, guid: 14d3e7f4fbb360542814de22eab8ff8e,
         type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.1900169
+      value: 0.19001691
       objectReference: {fileID: 0}
     - target: {fileID: 1673345483648933120, guid: 14d3e7f4fbb360542814de22eab8ff8e,
         type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0.03194505
+      value: 0.031945057
       objectReference: {fileID: 0}
     - target: {fileID: 1673345483648933120, guid: 14d3e7f4fbb360542814de22eab8ff8e,
         type: 3}
@@ -5216,12 +5221,12 @@ PrefabInstance:
     - target: {fileID: 1673345483648933120, guid: 14d3e7f4fbb360542814de22eab8ff8e,
         type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0.1626836
+      value: 0.16268364
       objectReference: {fileID: 0}
     - target: {fileID: 3446003337021456291, guid: 14d3e7f4fbb360542814de22eab8ff8e,
         type: 3}
       propertyPath: m_LocalRotation.w
-      value: -0.08402216
+      value: -0.084022164
       objectReference: {fileID: 0}
     - target: {fileID: 3446003337021456291, guid: 14d3e7f4fbb360542814de22eab8ff8e,
         type: 3}
@@ -5241,7 +5246,7 @@ PrefabInstance:
     - target: {fileID: 4326379881359784367, guid: 14d3e7f4fbb360542814de22eab8ff8e,
         type: 3}
       propertyPath: m_LocalRotation.w
-      value: -0.14282049
+      value: -0.14282048
       objectReference: {fileID: 0}
     - target: {fileID: 4326379881359784367, guid: 14d3e7f4fbb360542814de22eab8ff8e,
         type: 3}
@@ -5256,7 +5261,7 @@ PrefabInstance:
     - target: {fileID: 4326379881359784367, guid: 14d3e7f4fbb360542814de22eab8ff8e,
         type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0.10921689
+      value: 0.109216884
       objectReference: {fileID: 0}
     - target: {fileID: 4439768892370670986, guid: 14d3e7f4fbb360542814de22eab8ff8e,
         type: 3}
@@ -5286,12 +5291,12 @@ PrefabInstance:
     - target: {fileID: 4910697299725916874, guid: 14d3e7f4fbb360542814de22eab8ff8e,
         type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.02554087
+      value: 0.025540834
       objectReference: {fileID: 0}
     - target: {fileID: 4910697299725916874, guid: 14d3e7f4fbb360542814de22eab8ff8e,
         type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0.0014045323
+      value: 0.0014045312
       objectReference: {fileID: 0}
     - target: {fileID: 4910697299725916874, guid: 14d3e7f4fbb360542814de22eab8ff8e,
         type: 3}
@@ -5301,7 +5306,7 @@ PrefabInstance:
     - target: {fileID: 4910697299725916874, guid: 14d3e7f4fbb360542814de22eab8ff8e,
         type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0.05489064
+      value: 0.054890662
       objectReference: {fileID: 0}
     - target: {fileID: 5023540194112919921, guid: 14d3e7f4fbb360542814de22eab8ff8e,
         type: 3}
