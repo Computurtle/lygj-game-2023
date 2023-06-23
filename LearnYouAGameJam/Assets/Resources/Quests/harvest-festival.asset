@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc720f6e9f4f94645a1bf8538b595843, type: 3}
+  m_Name: harvest-festival
+  m_EditorClassIdentifier: 
+  <Name>k__BackingField: Harvest Festival
+  _MayorDialogue: {fileID: 8821616941762462369, guid: 3865eaab1cf494f4b93ddb9858e7694d,
+    type: 3}
+  _FloristDialogue: {fileID: 8821616941762462369, guid: 638a5c0e7fb24704abece60c920be21d,
+    type: 3}
+  _BlacksmithDialogue: {fileID: 8821616941762462369, guid: 30047f055afbb1841a1b9f574e5cbe59,
+    type: 3}
+  _WitchDialogue: {fileID: 8821616941762462369, guid: bf96abae4583fb548959050035adfff9,
+    type: 3}
+  _FarmerDialogue: {fileID: 8821616941762462369, guid: dd205350165078d4c838bc5c4fe6c547,
+    type: 3}
