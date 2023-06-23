@@ -2,9 +2,9 @@ using LYGJ.SceneManagement;
 
 namespace LYGJ.Content.HarvestFestival
 {
-    public class MayorTriggerZone : TriggerZone
+    public class WitchTriggerZone : TriggerZone
     {
-        public const string ID = "mayor-pippins-zone";
+        public const string ID = "witch-evangeline-zone";
 
         public override string Key => ID;
     }

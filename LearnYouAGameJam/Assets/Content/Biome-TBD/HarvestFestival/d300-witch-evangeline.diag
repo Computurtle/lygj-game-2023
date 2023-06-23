@@ -5,7 +5,7 @@ witch-evangeline: "Greetings, esteemed hero, it appears you have arrived to lend
 > "How did you know?" choice-what
 
 :choice-what
-player: "Yes indee.. wait, how did you know?"
+player: "Yes indee- wait, how did you know?"
 witch-evangeline: "Ah, the secrets of this realm unfold before me like an open book. There are few things that escape my notice. Might I entice you with a potion, a concoction that bestows abundant growth and bountiful yields upon the crops? Simply add it to your watering can, and witness the wonders it unveils."
 
 > "Yes, that would be perfect!" choice-accept-potion

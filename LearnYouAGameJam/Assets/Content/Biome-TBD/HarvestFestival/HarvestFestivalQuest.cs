@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
@@ -16,11 +15,9 @@ namespace LYGJ.Content.HarvestFestival
         public override string Key => ID;
 
         const string
-            _Mayor = "mayor-pippins",
             _Florist = "florist-penelope",
             _Blacksmith = "blacksmith-cedric",
             _Farmer = "farmer-eliza",
-            _Witch = "witch-evangeline",
 
             _S000 = "speak-to-pippins",
             _S001 = "speak-to-penelope",
@@ -64,10 +61,11 @@ namespace LYGJ.Content.HarvestFestival
                 )
             );
 
-            yield return (_S100, TalkToNPC(_Witch, _WitchDialogue)
+            yield return (_S100, EnterTriggerZone(WitchTriggerZone.ID)
                 .Then(
-                    Token =>
+                    async Token =>
                     {
+                        int result = await _WitchDialogue.Play();
                         CompleteStage(_S100);
                         StartStage(_S200, Token);
                     }
