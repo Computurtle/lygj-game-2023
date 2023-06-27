@@ -1,5 +1,6 @@
 ﻿using UnityEditor;
 using UnityEngine;
+#nullable disable
 
 namespace HighlightPlus {
     [CustomEditor(typeof(HighlightTrigger))]

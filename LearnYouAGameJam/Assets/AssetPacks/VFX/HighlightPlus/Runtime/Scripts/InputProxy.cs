@@ -5,6 +5,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
 using EnhancedTouch = UnityEngine.InputSystem.EnhancedTouch;
 #endif
+#nullable disable
 
 namespace HighlightPlus {
 
