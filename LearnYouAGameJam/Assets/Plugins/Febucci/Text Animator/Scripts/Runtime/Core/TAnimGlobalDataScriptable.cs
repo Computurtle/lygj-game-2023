@@ -66,14 +66,10 @@ namespace Febucci.UI.Core
         [SerializeField]
         internal string[] customActions = Array.Empty<string>();
 
-        #if UNITY_EDITOR
         public string[] CustomActions {
             get => customActions;
             set => customActions = value;
         }
-        #else
-        public IReadOnlyList<string> CustomActions => customActions;
-        #endif
 
         [SerializeField] internal bool          customTagsFormatting = false;
         [SerializeField] internal TagFormatting tagInfo_behaviors    = new('<', '>');

@@ -987,7 +987,7 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 9
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!84 &1421128316
+--- !u!84 &1409728704
 RenderTexture:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -4489,7 +4489,7 @@ PrefabInstance:
     - target: {fileID: 2597627505605802446, guid: ff04d7df4dd2cd047906b09d0d24ace6,
         type: 3}
       propertyPath: m_LocalRotation.x
-      value: -0.025449546
+      value: -0.025449537
       objectReference: {fileID: 0}
     - target: {fileID: 2597627505605802446, guid: ff04d7df4dd2cd047906b09d0d24ace6,
         type: 3}
@@ -4499,7 +4499,7 @@ PrefabInstance:
     - target: {fileID: 2597627505605802446, guid: ff04d7df4dd2cd047906b09d0d24ace6,
         type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0.059618086
+      value: 0.05961807
       objectReference: {fileID: 0}
     - target: {fileID: 2809019015333074213, guid: ff04d7df4dd2cd047906b09d0d24ace6,
         type: 3}
@@ -4509,7 +4509,7 @@ PrefabInstance:
     - target: {fileID: 2809019015333074213, guid: ff04d7df4dd2cd047906b09d0d24ace6,
         type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0.03194506
+      value: 0.031945057
       objectReference: {fileID: 0}
     - target: {fileID: 2809019015333074213, guid: ff04d7df4dd2cd047906b09d0d24ace6,
         type: 3}
@@ -4519,7 +4519,7 @@ PrefabInstance:
     - target: {fileID: 2809019015333074213, guid: ff04d7df4dd2cd047906b09d0d24ace6,
         type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0.1626836
+      value: 0.16268364
       objectReference: {fileID: 0}
     - target: {fileID: 4728143965910753415, guid: ff04d7df4dd2cd047906b09d0d24ace6,
         type: 3}
@@ -5263,7 +5263,7 @@ PrefabInstance:
     - target: {fileID: 3446003337021456291, guid: 14d3e7f4fbb360542814de22eab8ff8e,
         type: 3}
       propertyPath: m_LocalRotation.w
-      value: -0.08402216
+      value: -0.084022164
       objectReference: {fileID: 0}
     - target: {fileID: 3446003337021456291, guid: 14d3e7f4fbb360542814de22eab8ff8e,
         type: 3}
