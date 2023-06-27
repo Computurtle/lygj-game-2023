@@ -12,6 +12,7 @@ using Debug = UnityEngine.Debug;
 using Random = UnityEngine.Random;
 
 namespace LYGJ.AudioManagement {
+    [AssetsOnly, AssetSelector]
     [CreateAssetMenu(menuName = "The Deliverer/Audio/SFX", fileName = "New SFX", order = 1000)]
     public sealed class SFX : ScriptableObject {
         /// <summary> Gets the audio clips to pick from. </summary>

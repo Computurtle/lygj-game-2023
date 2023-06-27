@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 09f695de46754d0e998f308dc96c9298, type: 3}
+  m_Name: Sword_Impact
+  m_EditorClassIdentifier: 
+  <Clips>k__BackingField:
+  - {fileID: 8300000, guid: 6525e6929a128f84697f34594985426e, type: 3}
+  - {fileID: 8300000, guid: 017645089f08c534abb0ff5bcf192824, type: 3}
+  - {fileID: 8300000, guid: b7b8b661b633b924b87592c42b72c63e, type: 3}
+  - {fileID: 8300000, guid: f23fc787652de584fb19599aa7ed0d14, type: 3}
+  - {fileID: 8300000, guid: eb4d22408e62b4f4f95de641a024777a, type: 3}
+  <Volume>k__BackingField: 1
+  <PitchVariance>k__BackingField: {x: 0.9, y: 1.1}
+  _UsePitchVariance: 1
+  <Mixer>k__BackingField: 2
+  <Is3D>k__BackingField: 1

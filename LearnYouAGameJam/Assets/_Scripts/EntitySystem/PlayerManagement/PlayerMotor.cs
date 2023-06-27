@@ -656,7 +656,14 @@ namespace LYGJ.EntitySystem.PlayerManagement {
     }
 
     public enum MotorPriority {
+        /// <summary> Attacking. </summary>
+        Attack,
+        /// <summary> Blocking. </summary>
+        Block,
+        /// <summary> Taking damage. </summary>
+        Damage,
         /// <summary> General gameplay. </summary>
+        [Obsolete]
         Gameplay,
         /// <summary> A minigame. </summary>
         Minigame,

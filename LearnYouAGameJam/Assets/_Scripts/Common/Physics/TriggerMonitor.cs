@@ -96,6 +96,9 @@ namespace LYGJ.Common.Physics {
 
             throw new MissingComponentException($"No {nameof(TriggerMonitor)} component found on {GameObject.name}.");
         }
+
+        /// <inheritdoc cref="GetTriggerMonitor(UnityEngine.GameObject,bool)"/>
+        public static TriggerMonitor GetTriggerMonitor( this Component Component, bool AddIfNotFound = true ) => Component.gameObject.GetTriggerMonitor(AddIfNotFound);
     }
 
 }
