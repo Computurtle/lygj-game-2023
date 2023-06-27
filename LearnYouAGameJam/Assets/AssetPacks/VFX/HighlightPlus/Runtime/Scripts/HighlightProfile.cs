@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+#nullable disable
 
 namespace HighlightPlus {
 
@@ -383,4 +384,3 @@ namespace HighlightPlus {
         }
     }
 }
-

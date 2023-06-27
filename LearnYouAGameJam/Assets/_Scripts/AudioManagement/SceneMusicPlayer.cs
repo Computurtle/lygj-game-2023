@@ -14,13 +14,22 @@ namespace LYGJ.AudioManagement {
         [SerializeField, Tooltip("The timing to play the music.")] PlayMode _PlayMode = PlayMode.Start;
 
         [Space]
-        [SerializeField, Tooltip("The music to play."), Required, AssetsOnly, AssetSelector, EnableIf(nameof(Editor_WillPlay)), DisableInPlayMode]
+        #if UNITY_EDITOR
+        [EnableIf(nameof(Editor_WillPlay))]
+        #endif
+        [SerializeField, Tooltip("The music to play."), Required, AssetsOnly, AssetSelector, DisableInPlayMode]
         Music _Music = null!;
 
-        [SerializeField, Tooltip("The stems to play."), EnableIf(nameof(Editor_WillPlay)), DisableInPlayMode]
+        #if UNITY_EDITOR
+        [EnableIf(nameof(Editor_WillPlay))]
+        #endif
+        [SerializeField, Tooltip("The stems to play."), DisableInPlayMode]
         Stems _Stems = Stems.FullMix;
 
-        [SerializeField, Tooltip("Whether to fade out the previous music."), EnableIf(nameof(Editor_WillPlay)), DisableInPlayMode]
+        #if UNITY_EDITOR
+        [EnableIf(nameof(Editor_WillPlay))]
+        #endif
+        [SerializeField, Tooltip("Whether to fade out the previous music."), DisableInPlayMode]
         bool _Immediate = false;
 
         /// <summary> Plays the music. </summary>

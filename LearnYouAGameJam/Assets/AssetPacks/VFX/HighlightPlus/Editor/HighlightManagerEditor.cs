@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+#nullable disable
 
 namespace HighlightPlus {
     [CustomEditor(typeof(HighlightManager))]

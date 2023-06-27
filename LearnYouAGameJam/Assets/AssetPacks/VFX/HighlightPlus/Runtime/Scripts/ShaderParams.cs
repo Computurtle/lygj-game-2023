@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+#nullable disable
 
 namespace HighlightPlus {
 
@@ -83,4 +84,3 @@ namespace HighlightPlus {
         public const string SKW_SEETHROUGH_ONLY_BORDER = "HP_SEETHROUGH_ONLY_BORDER";
     }
 }
-
